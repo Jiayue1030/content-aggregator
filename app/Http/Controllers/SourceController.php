@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Source;
 use App\Models\UserFeed;
 use App\Models\UserSource;
+use App\Repositories\SourceRepository;
 use App\Services\SourceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,17 +27,18 @@ class SourceController extends Controller
      */
     public function __construct(private SourceService $sourceService,private FeedService $feedService)
     {
-        //
+        // $sourceService = new SourceService(new SourceRepository(new Source()));
+        // $feedService = new FeedService();
     }
 
     private function checkSourceExistence($url){
         return Response::json(new SourceResource($url));
     }
 
-    public function addSource(Request $request)
+    public function addSourceTest(Request $request)
     {
         $feedController = new FeedController();
-        $existingSource = $this->sourceService->checkUrlExistence($request->url);
+        $existingSource = Source::where('url', $request->url)->get()->first();;
         $userId = $request->user()->id;
 
         if ($existingSource) { //If this source already exists
@@ -90,6 +92,63 @@ class SourceController extends Controller
                                 'feeds' => $newFeeds]);
         }
     }
+
+    public function addSource(Request $request)
+    {
+        $feedController = new FeedController();
+        $existingSource = $this->checkUrlExistence($request->url);
+        // dd($existingSource);
+        $userId = $request->user()->id;
+
+        if ($existingSource!=null) { // If this source already exists
+            // echo('exist');
+            $userHasSource = $this->userHasSource($userId, $existingSource->id);
+
+            if (!$userHasSource) { // User did not have this source yet
+                $userSource = $this->addUserSource($userId, $existingSource->id);
+
+                $userFeedsFromSource = UserFeed::where('source_id', $existingSource->id)
+                    ->where('user_id', $userId)
+                    ->exists();
+
+                if ($userFeedsFromSource) { // User already has feeds from the source
+                    return $this->success(['message' => 'User already has the feeds.']);
+                } else {
+                    $feedController->addFeedsToUsers($existingSource->id, null, $userId);
+                    return $this->success([
+                        'source' => $existingSource,
+                        'user_source' => $userSource,
+                    ]);
+                }
+            } else { // The user already has this source, check whether this user has the related feeds
+                $userFeedsFromSource = UserFeed::where('source_id', $existingSource->id)
+                    ->where('user_id', $userId)
+                    ->exists();
+
+                if (!$userFeedsFromSource) { // This user does not have the related feeds
+                    $feedController->addFeedsToUsers($existingSource->id, null, $userId);
+                    return $this->success(['message' => 'Feeds added.']);
+                } else {
+                    return $this->error('User already has this source and feed.');
+                }
+            }
+        } else {
+            $newSource = $this->createNewSource($request);
+            if($newSource!=null){
+                $userSource = $this->addUserSource($userId, $newSource->id);
+                $newFeeds = $feedController->addFeeds($request, $newSource->id);
+
+                return $this->success([
+                    'source' => $newSource,
+                    'user_source' => $userSource?$userSource:null,
+                    'feeds' => $newFeeds?$newFeeds:null,
+                ]);
+            }else{
+                return $this->error('URL not support RSS.');
+            }
+        }
+    }
+
 
     public function searchUrl(Request $request)
     {
@@ -190,22 +249,46 @@ class SourceController extends Controller
         $crawler = new CrawlerController();
         $created_by = $request->user()->id;
         $url = $request->url;
-        $sourceData = json_decode($crawler->readRss($url)->content());
+        $rssResult = $crawler->readRss($url);
+        $sourceData = $rssResult!=null?json_decode($rssResult->content()):$rssResult;
         // dd($sourceData);
+        if($sourceData == null){
+            // echo('No data fetched from crawler');
+            return null;
+            // return $this->error('The URL is not rss supported.');
+        }else{
+            // echo('Got data fetch'.$sourceData);
+            $newSource = Source::create(
+                [
+                    'url' => $url,
+                    'rss_url' => $sourceData->url,
+                    'link' => $sourceData->link,
+                    'description' => $sourceData->description,
+                    'type' => $sourceData->type,
+                    'created_by' => $created_by,
+                    'title' => $sourceData->title,
+                    'is_rss' => $sourceData->is_rss,
+                    'language' => $sourceData->language,
+                    'metadata' => $sourceData->metadata,
+                    'author' => $sourceData->author,
+                ]
+            );
+            return $newSource;
+        }
         // var_dump($sourceData);
-        $newSource = Source::create(
-            [
-                'url' => $sourceData->url,
-                'description' => $sourceData->description,
-                'type' => $sourceData->type,
-                'created_by' => $created_by,
-                'title' => $sourceData->title,
-                'is_rss' => $sourceData->is_rss,
-                'language' => $sourceData->language,
-                'metadata' => $sourceData->metadata,
-                'author' => $sourceData->author,
-            ]
-        );
-        return $newSource;
+    }
+
+    public function userHasSource(int $user_id, int $source_id): bool
+    {
+        return UserSource::where('user_id', $user_id)
+            ->where('source_id', $source_id)
+            ->exists();
+    }
+
+    public function checkUrlExistence($url)
+    {
+        $source = Source::where('url', $url)->get()->first();
+        // dd($url,$source);
+        return $source;
     }
 }

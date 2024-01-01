@@ -14,9 +14,12 @@ return new class extends Migration
     public function up()
     {
         Schema::create('sources', function (Blueprint $table) {
+            //crawlerController -> readRss
             $table->id();
             $table->string('title');
-            $table->string('url'); //rss subscribe url
+            $table->string('url'); //url source from user
+            $table->string('rss_url')->nullable(); //real rss subscribe url
+            $table->string('link')->nullable(); //Public website from the rss source
             $table->integer('created_by');
             $table->string('description')->nullable();
             $table->string('type')->nullable();

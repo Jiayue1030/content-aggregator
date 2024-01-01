@@ -51,7 +51,7 @@ return [
              *
              * @var boolean
              */
-            'force-feed' => false,
+            'force-feed' => true,
 
             /**
              * Whether the RSS feed should have its output ordered by date.

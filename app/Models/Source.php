@@ -19,7 +19,9 @@ class Source extends Model
     protected $fillable = [
         'id',
         'title',
-        'url',
+        'url', //url source from user
+        'rss_url',//real rss subscribe url
+        'link',//Public website from the rss source
         'description',
         'type',
         'is_rss',

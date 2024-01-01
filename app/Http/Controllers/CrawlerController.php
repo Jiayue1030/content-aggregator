@@ -105,20 +105,26 @@ class CrawlerController extends Controller
         // $rssUrl = $request->url;
         $f = FeedReader::read($rssUrl);
         //parse these data into what SouceModel needed
-        // dd($f);
-        $rssSourceData = [
-            'title' => $f->get_title(),
-            'url'   => $f->subscribe_url(),
-            'description' => $f->get_description(),
-            'type'  => $f->get_type(),
-            'is_rss' => true,
-            'language' => $f->get_language(),
-            'metadata' => ['copyright'  => $f->get_copyright(),
-                            'image_url' => $f->get_image_url()],
-            'author' => $f->get_authors(),
-            'link'  => $f->get_link(), //Public website
-        ];
-        return response()->json($rssSourceData);
+        // dd($f->data == null);
+        if($f->data!=null){
+            $rssSourceData = [
+                'title' => $f->get_title(),
+                'url'   => $rssUrl, //url source from user
+                'rss_url'   => $f->subscribe_url(), //real rss subscribe url
+                'description' => $f->get_description(),
+                'type'  => $f->get_type(),
+                'is_rss' => true,
+                'language' => $f->get_language(),
+                'metadata' => ['copyright'  => $f->get_copyright(),
+                                'image_url' => $f->get_image_url()],
+                'author' => $f->get_authors(),
+                'link'  => $f->get_link(), //Public website from the rss source
+            ];
+            return response()->json($rssSourceData);
+        }else{
+            return null; //TODO:This link not support rss (you should call above methods and get that)
+        }
+        
     }
 
     //Return the RSS feeds information

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'profile'], function () {
     Route::get('/', [ProfileController::class, 'me']);
-    Route::get('/sources',[SourceController::class, 'getUserSources']);
+    // Route::get('/sources',[SourceController::class, 'getUserSources']);
 });
 
 // Route::middleware(['auth:user'])->group(['prefix' => 'users'],function(){

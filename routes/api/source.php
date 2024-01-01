@@ -24,6 +24,8 @@ Route::middleware(['auth:user'])->group(function(){
 
     //To add a source to user's sources list
     Route::post('/source/add',[SourceController::class, 'addSource']);
+    Route::post('/source/add2',[SourceController::class, 'addSource2']);
+
 
     Route::put('/source/update/{usersourceid}',[SourceController::class, 'updateUserSource']);
     Route::post('/source/delete/{usersourceid}',[SourceController::class, 'deleteUserSource']);

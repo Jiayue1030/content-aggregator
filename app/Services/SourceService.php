@@ -44,7 +44,9 @@ class SourceService
 
     public function checkUrlExistence(string $url)
     {
-        return Source::where('url', $url)->first();
+        $source = Source::where('url', $url)->get()->first();
+        dd($url,$source);
+        return $source;
     }
 
     public function userHasSource(int $user_id, int $source_id): bool
