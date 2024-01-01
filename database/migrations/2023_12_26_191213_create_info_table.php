@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('infos', function (Blueprint $table) {
             $table->id();
             $table->integer('user_id');
-            $table->enum('type',['category', 'tag','list','note'])->default();
+            $table->enum('type',['category', 'tag','list','note'])->default('category');
             $table->string('title');
             $table->string('description')->nullable();
             $table->string('references')->nullable();

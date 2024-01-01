@@ -191,6 +191,7 @@ class SourceController extends Controller
         $created_by = $request->user()->id;
         $url = $request->url;
         $sourceData = json_decode($crawler->readRss($url)->content());
+        // dd($sourceData);
         // var_dump($sourceData);
         $newSource = Source::create(
             [

@@ -117,9 +117,11 @@ class FeedController extends Controller
         // Assuming $rssItem->pubDate contains the publication date
         $currentDate = now();
         foreach ($rssItems as $rssItem) {
-            // dd($rssItem['pubdate']);
-            $pubDate = \Carbon\Carbon::parse($rssItem['pubdate']);
-
+            $carbonDate = \Carbon\Carbon::createFromFormat('j F Y, g:i a', $rssItem['pubdate']);
+            $pubDate = $carbonDate->toDateTimeString();
+            $pubDate = \Carbon\Carbon::parse($pubDate);
+            $rssItem['pubdate'] = $pubDate;
+            // dd($pubDate);
             // Check if the item's publication date is within the specified range
             if ($pubDate->diffInDays($currentDate) <= $daysAgo) {
                 $filteredResults[] = $rssItem;

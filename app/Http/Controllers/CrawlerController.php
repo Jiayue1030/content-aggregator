@@ -105,6 +105,7 @@ class CrawlerController extends Controller
         // $rssUrl = $request->url;
         $f = FeedReader::read($rssUrl);
         //parse these data into what SouceModel needed
+        // dd($f);
         $rssSourceData = [
             'title' => $f->get_title(),
             'url'   => $f->subscribe_url(),
