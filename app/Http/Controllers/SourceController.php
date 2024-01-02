@@ -163,6 +163,8 @@ class SourceController extends Controller
         // ])->get();
 
         $sources = UserSource::with('source')
+        ->with('feeds')
+        ->with('categories')->with('tags')
         ->where('user_id', $request->user()->id)
         ->get();
 

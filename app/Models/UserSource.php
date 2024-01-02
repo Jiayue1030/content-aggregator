@@ -20,7 +20,8 @@ class UserSource extends Model
     }
 
     public function feeds(){
-        return $this->hasMany(Feed::class,'id','feed_id');
+        return $this->hasMany(UserFeed::class,'source_id','source_id')->with('feed');
+        // return $this->hasMany(Feed::class,'id','feed_id');
     }
 
     public function categories(){

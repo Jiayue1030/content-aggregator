@@ -21,6 +21,10 @@ class UserFeed extends Base
         return $this->hasOne(Feed::class,'id','feed_id');
     }
 
+    public function source(){
+        return $this->hasOne(UserSource::class,'source_id','source_id')->with('source');
+    }
+
     public function categories(){
         return $this->hasMany(InfoEntry::class,'origin_id','source_id')
                 ->with('info')

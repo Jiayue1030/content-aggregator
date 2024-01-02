@@ -52,10 +52,27 @@ class FeedController extends Controller
     }
 
     public function getUserFeedsList(Request $request){
+        $userSourceId = isset($request->user_source_id)?$request->user_source_id:null;
+        $sourceId = null;
+
+        if($userSourceId!=null){
+            // echo($userSourceId.''.$request->user()->id);
+            $userSource = UserSource::where('id',$userSourceId)
+                            ->where('user_id',$request->user()->id)->first();
+            $sourceId = $userSource!=null?$userSource->source_id:$userSource;
+        }
+    
         $userFeeds = UserFeed::with('feed')
+        ->with('source')
         ->where('user_id', $request->user()->id)
+        // ->where('source_id',$sourceId)
         ->get();
-        return $this->success(['feeds'=>$userFeeds]);
+        // echo($request->user()->id.' '.$sourceId.' '.$userSourceId);
+        // dd($userFeeds);
+        // dd($userFeeds->where(['source_id',$sourceId]));
+        $userFeedsList = $sourceId!=null?$userFeeds->where('source_id',$sourceId):$userFeeds;
+        // dd($userFeed);
+        return $this->success(['feeds'=>$userFeedsList]);
     }
 
     public function getUserFeed(Request $request,$userFeedId){
