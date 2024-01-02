@@ -60,6 +60,9 @@ class FeedController extends Controller
             $userSource = UserSource::where('id',$userSourceId)
                             ->where('user_id',$request->user()->id)->first();
             $sourceId = $userSource!=null?$userSource->source_id:$userSource;
+            if($sourceId==null){
+                return $this->error('Source not exist');
+            }
         }
     
         $userFeeds = UserFeed::with('feed')
