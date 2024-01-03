@@ -89,4 +89,5 @@ Route::middleware(['auth:user'])->group(function(){
 
      Route::get('test/latest',[UpdateFeedsJob::class,'getLatestFeedIdFromSource']);
 
+     Route::get('test/jobs',[UpdateFeedsJob::class,'handle']);
 });

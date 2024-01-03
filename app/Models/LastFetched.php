@@ -10,6 +10,8 @@ class LastFetched extends Model
 {
     use HasFactory,SoftDeletes;
 
+    protected $table = 'last_fetched';
+
     protected $fillable = ['source_id',
                             'last_fetched_feed_id',
                             'last_checked',];

@@ -130,20 +130,37 @@ class FeedController extends Controller
         }
     }
 
-    private function filterRssItemsByDate($rssItems, $daysAgo)
+    //A function to let users get filtered rss items
+    //daysago -> will get rss items within (daysago -> current date)
+    public function filterRssItemsByDate($rssItems, $daysAgo=1,$date=null)
     {
         $filteredResults = [];
 
         // Assuming $rssItem->pubDate contains the publication date
         $currentDate = now();
         foreach ($rssItems as $rssItem) {
-            $carbonDate = \Carbon\Carbon::createFromFormat('j F Y, g:i a', $rssItem['pubdate']);
-            $pubDate = $carbonDate->toDateTimeString();
+            // $carbonDate = \Carbon\Carbon::createFromFormat('j F Y, g:i a', $rssItem['pubdate']);
+            // $pubDate = $carbonDate->toDateTimeString();
+            
+            $pubDate = $rssItem['pubdate'] ;
             $pubDate = \Carbon\Carbon::parse($pubDate);
-            $rssItem['pubdate'] = $pubDate;
             // dd($pubDate);
             // Check if the item's publication date is within the specified range
             if ($pubDate->diffInDays($currentDate) <= $daysAgo) {
+                $filteredResults[] = $rssItem;
+            }
+        }
+        return $filteredResults;
+    }
+
+    public function filterUpdatedFeeds($rssItems, $requestPubDate)
+    {
+        $filteredResults = [];
+        // dd($rssItems);
+        foreach ($rssItems as $rssItem) {
+            $itemPubDate =  $rssItem['pubdate'];
+            // Check if the item's pubdate is greater than the request pubdate
+            if ($itemPubDate > $requestPubDate) {
                 $filteredResults[] = $rssItem;
             }
         }
@@ -151,39 +168,48 @@ class FeedController extends Controller
         return $filteredResults;
     }
 
+    //Find the feed from a source id
     public function addOrUpdateFeed($sourceId,$rssItem){
-        $feed = Feed::updateOrCreate(
-            ['guid' => $rssItem['guid'],
-             'link' => $rssItem['link'],
-            ],
-            [
-                'title' => $rssItem['title'],
-                'description' => $rssItem['description'],
-                'content' => $rssItem['content'],
-                'link' => $rssItem['link'],
-                'guid' => $rssItem['guid'],
-                'pubdate' => $rssItem['pubdate'],
-                'categories' => $rssItem['categories'], 
-                'authors' => $rssItem['authors'], 
-                'source_id' => $sourceId, 
-            ]
-        );
-
-        $this->addFeedToSubscribedUsers($feed->id,$sourceId);
-
-        return $feed->id;
+        $existingFeed = Feed::where('guid',$rssItem['guid'])
+                        ->where('source_id',$sourceId)
+                        ->orderBy('pubdate','desc')
+                        ->get()->first();
+        $newFeed = null;
+        if(!$existingFeed){ //If the feeds not exists
+            $newFeed = Feed::updateOrCreate(
+                [   'guid' => $rssItem['guid'],
+                    'source_id' => $sourceId,
+                    'link' => $rssItem['link'],
+                ],
+                [
+                    'title' => $rssItem['title'],
+                    'description' => $rssItem['description'],
+                    'content' => $rssItem['content'],
+                    'pubdate' => $rssItem['pubdate'],
+                    'categories' => $rssItem['categories'], 
+                    'authors' => $rssItem['authors'], 
+                    'source_id' => $sourceId, 
+                ]
+            );
+            $this->addFeedToSubscribedUsers($newFeed->id,$sourceId);
+        }else{
+            $this->addFeedToSubscribedUsers($existingFeed->id,$sourceId);
+        }
+        $result = $existingFeed==null?$newFeed->id:$existingFeed->id;
+        // dd($result);
+        return $result;
     }
 
     private function addFeedToSubscribedUsers($feedId,$sourceId){
-        $userIds = UserSource::where('source_id',$sourceId)->get('id');
-        
-        foreach($userIds as $userId){
+        $users = UserSource::where('source_id',$sourceId)->get();
+        foreach($users as $user){
             UserFeed::updateOrCreate(
-                ['user_id' => $userId,'feed_id' => $feedId,'source_id'=>$sourceId],
+                ['user_id' => $user->id,
+                'feed_id' => $feedId,
+                'source_id'=>$sourceId],
                 ['updated_at' => now()]
             );
         }
-        // $this->success(['message' => 'Feed added to all subscribed users.']);
     }
 
     //To get add all related Feeds from the Source to UserFeed 

@@ -129,10 +129,7 @@ class CrawlerController extends Controller
 
     //Return the RSS feeds information
     public function readRssItems($rssUrl){
-        // $rssUrl = $request->url;
-        // $rssUrl = $request->url;
         $f = FeedReader::read($rssUrl);
-        // dd($f->get_item(2)->get_categories());
         $rssItems = $f->get_items();
         $rssItemsData = [];
 
@@ -145,10 +142,12 @@ class CrawlerController extends Controller
                 'guid' => $rssItem->get_id(),
                 'authors' => $rssItem->get_authors(),
                 'categories' => $rssItem->get_categories(),
-                'pubdate' => $rssItem->get_date(),
+                'pubdate' => $rssItem->get_date('Y-m-d H:i:s'),
+                //TODO: convert into correct datatime format
                 // 'contents' => $rssItem->get_content(),
             ];
         }
+        // dd($rssItemsData);
         return $rssItemsData;
         //TODO: last check point?
     }

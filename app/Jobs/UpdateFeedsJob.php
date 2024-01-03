@@ -12,6 +12,7 @@ use App\Models\Source;
 use App\Models\LastFetched;
 use App\Models\Feed;
 use App\Services\FeedUpdateService;
+use Illuminate\Support\Facades\Log;
 
 class UpdateFeedsJob implements ShouldQueue
 {
@@ -36,20 +37,14 @@ class UpdateFeedsJob implements ShouldQueue
     {
         $sources = Source::all();
         $service = new FeedUpdateService();
+        // $newLastFetchedFeedId = null;
 
         foreach ($sources as $source) {
-            $sourceId = $source->id;
-            $lastFetched = LastFetched::where('source_id', $source->id)->first();
-    
-            //  To check if the source has been updated since the last check
-            if ($this->shouldUpdate($lastFetched)) {
-                // Fetch and update feeds for the source
-                $newFeeds = $service->updateFeeds($sourceId);
-    
-                // Update the last_fetched table
-                $this->updateLastFetched($source, $newFeeds);
-            }
+            print("Checking source id:".$source->id.'');
+            $newLastFetchedFeedId = $service->updateFeeds($source->id);
+            Log::info('Done added newLastFetchedFeedId.'.$newLastFetchedFeedId.'to source:'.$source->id);
         }
+        return $newLastFetchedFeedId;
     }
 
     protected function shouldUpdate($lastFetched)

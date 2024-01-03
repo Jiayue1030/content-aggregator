@@ -35,63 +35,63 @@ class SourceController extends Controller
         return Response::json(new SourceResource($url));
     }
 
-    public function addSourceTest(Request $request)
-    {
-        $feedController = new FeedController();
-        $existingSource = Source::where('url', $request->url)->get()->first();;
-        $userId = $request->user()->id;
+    // public function addSourceTest(Request $request)
+    // {
+    //     $feedController = new FeedController();
+    //     $existingSource = Source::where('url', $request->url)->get()->first();;
+    //     $userId = $request->user()->id;
 
-        if ($existingSource) { //If this source already exists
-            $userHasSource = $this->sourceService->userHasSource($userId, $existingSource->id);
+    //     if ($existingSource) { //If this source already exists
+    //         $userHasSource = $this->sourceService->userHasSource($userId, $existingSource->id);
 
-            if (!$userHasSource) { //User did not have this souce yet
-                // echo('User did not have this souce yet');
-                $userSource = $this->addUserSource($userId, $existingSource->id);
-                // echo('see the addUserSource records');
-                $userFeedsFromSource = UserFeed::where('source_id',$existingSource->id)
-                                        ->where('user_id',$userId)->get();
-                // var_dump($userFeedsFromSource);
-                if($userFeedsFromSource!=null){ //User already has feeds from the sources
-                    // dd($userFeedsFromSource);
-                    // echo('wqwwq');
-                    return $this->success(['message'=>'User already has the feeds.']);
-                }else{
-                    // echo('wqwwewd333wq');
-                    $feedController->addFeedsToUsers($existingSource->id,$feedId=null,$userId);
-                    // dd($existingSource);
-                    return $this->success([
-                        'source'=>$existingSource,
-                        'user_source' => $userSource,]);
-                }
-                //$userFeeds = $this->addUserFeed($user_id, $existingSource->id);
-                //TODO: Check if this source already has feeds?
+    //         if (!$userHasSource) { //User did not have this souce yet
+    //             // echo('User did not have this souce yet');
+    //             $userSource = $this->addUserSource($userId, $existingSource->id);
+    //             // echo('see the addUserSource records');
+    //             $userFeedsFromSource = UserFeed::where('source_id',$existingSource->id)
+    //                                     ->where('user_id',$userId)->get();
+    //             // var_dump($userFeedsFromSource);
+    //             if($userFeedsFromSource!=null){ //User already has feeds from the sources
+    //                 // dd($userFeedsFromSource);
+    //                 // echo('wqwwq');
+    //                 return $this->success(['message'=>'User already has the feeds.']);
+    //             }else{
+    //                 // echo('wqwwewd333wq');
+    //                 $feedController->addFeedsToUsers($existingSource->id,$feedId=null,$userId);
+    //                 // dd($existingSource);
+    //                 return $this->success([
+    //                     'source'=>$existingSource,
+    //                     'user_source' => $userSource,]);
+    //             }
+    //             //$userFeeds = $this->addUserFeed($user_id, $existingSource->id);
+    //             //TODO: Check if this source already has feeds?
                 
-            }else{//The user already has this source, check whether this user has the related feeds
-                $userFeedsFromSource = UserFeed::where('source_id',$existingSource->id)
-                                        ->where('user_id',$userId)->get()->first();
-                // dd($userFeedsFromSource);
-                if($userFeedsFromSource==null){ //This user does not have the related feeds
-                    // echo('Add those feeds inside');
-                    $feedController->addFeedsToUsers($existingSource->id,null,$userId); 
-                    // echo('Errmr');
-                    return $this->success(['message','Feeds added.']); 
-                }else{
-                    // dd($userFeedsFromSource);
-                    echo('Seventeen da best');
+    //         }else{//The user already has this source, check whether this user has the related feeds
+    //             $userFeedsFromSource = UserFeed::where('source_id',$existingSource->id)
+    //                                     ->where('user_id',$userId)->get()->first();
+    //             // dd($userFeedsFromSource);
+    //             if($userFeedsFromSource==null){ //This user does not have the related feeds
+    //                 // echo('Add those feeds inside');
+    //                 $feedController->addFeedsToUsers($existingSource->id,null,$userId); 
+    //                 // echo('Errmr');
+    //                 return $this->success(['message','Feeds added.']); 
+    //             }else{
+    //                 // dd($userFeedsFromSource);
+    //                 // echo('Seventeen da best');
 
-                    return $this->error('User already has this source and feed.');
-                }
-            }
-        }else{
-            // echo('is here anot');
-            $newSource = $this->createNewSource($request);
-            $userSource = $this->addUserSource($userId, $newSource->id);
-            $newFeeds = $feedController->addFeeds($request,$newSource->id);
-            return $this->success(['source'=>$newSource,
-                                'user_source' => $userSource,
-                                'feeds' => $newFeeds]);
-        }
-    }
+    //                 return $this->error('User already has this source and feed.');
+    //             }
+    //         }
+    //     }else{
+    //         echo('is here anot');
+    //         $newSource = $this->createNewSource($request);
+    //         $userSource = $this->addUserSource($userId, $newSource->id);
+    //         $newFeeds = $feedController->addFeeds($request,$newSource->id);
+    //         return $this->success(['source'=>$newSource,
+    //                             'user_source' => $userSource,
+    //                             'feeds' => $newFeeds]);
+    //     }
+    // }
 
     public function addSource(Request $request)
     {
@@ -101,7 +101,7 @@ class SourceController extends Controller
         $userId = $request->user()->id;
 
         if ($existingSource!=null) { // If this source already exists
-            // echo('exist');
+            echo('exist');
             $userHasSource = $this->userHasSource($userId, $existingSource->id);
 
             if (!$userHasSource) { // User did not have this source yet
@@ -133,6 +133,7 @@ class SourceController extends Controller
                 }
             }
         } else {
+            echo('not exist');
             $newSource = $this->createNewSource($request);
             if($newSource!=null){
                 $userSource = $this->addUserSource($userId, $newSource->id);
@@ -251,6 +252,7 @@ class SourceController extends Controller
         $crawler = new CrawlerController();
         $created_by = $request->user()->id;
         $url = $request->url;
+        
         $rssResult = $crawler->readRss($url);
         $sourceData = $rssResult!=null?json_decode($rssResult->content()):$rssResult;
         // dd($sourceData);
@@ -259,7 +261,8 @@ class SourceController extends Controller
             return null;
             // return $this->error('The URL is not rss supported.');
         }else{
-            // echo('Got data fetch'.$sourceData);
+            // echo('Got data fetch');
+            // dd($sourceData->metadata);
             $newSource = Source::create(
                 [
                     'url' => $url,
@@ -275,6 +278,7 @@ class SourceController extends Controller
                     'author' => $sourceData->author,
                 ]
             );
+            // dd($newSource);
             return $newSource;
         }
         // var_dump($sourceData);
