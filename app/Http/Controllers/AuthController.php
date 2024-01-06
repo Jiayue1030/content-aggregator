@@ -137,10 +137,13 @@ class AuthController extends Controller
             ),
         ]
     )]
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request)
     {
-        $this->authService->logoutUser($request->user());
-
-        return Response::json(null, HttpResponse::HTTP_NO_CONTENT);
+        $result = $this->authService->logoutUser($request->user());
+        if($result==true){
+            return $this->success(['message' => 'Logged out.']);
+        }else{
+            return $this->error(['message' => 'Error occured when logged out.']);
+        }
     }
 }

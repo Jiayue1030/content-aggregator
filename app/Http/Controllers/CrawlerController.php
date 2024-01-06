@@ -130,7 +130,7 @@ class CrawlerController extends Controller
     //Return the RSS feeds information
     public function readRssItems($rssUrl){
         $f = FeedReader::read($rssUrl);
-        $rssItems = $f->get_items();
+        $rssItems = $f->strip_htmltags->get_items();
         $rssItemsData = [];
 
         foreach ($rssItems as $rssItem) {
@@ -138,6 +138,7 @@ class CrawlerController extends Controller
                 'title' => $rssItem->get_title(),
                 'description' => $rssItem->get_description(),
                 'content' => $rssItem->get_content(),
+                'clean_content' => $rssItem->strip_htmltags(array_merge($rssItem->strip_htmltags, array('h1', 'a', 'img'))),
                 'link' => $rssItem->get_link(),
                 'guid' => $rssItem->get_id(),
                 'authors' => $rssItem->get_authors(),

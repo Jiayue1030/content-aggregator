@@ -3,6 +3,7 @@
 use App\Http\Controllers\SourceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CrawlerController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\InfoController;
 use App\Http\Controllers\InfoEntryController;
@@ -83,6 +84,11 @@ Route::middleware(['auth:user'])->group(function(){
     
     //Example: info/feed/get/1
     Route::get('info/{originType}/get/{originId}',[InfoEntryController::class,'getInfoTypesFromOrigin']);
+    
+    Route::get('/export/feeds/{userSourceId}', [ExportController::class,'exportFeedsContentFromSource']);
+    Route::get('/get/feeds/with_category',[UserFeedController::class,'getUserFeedsWithCategory']);
+
+    
     /**
      * Export
      */

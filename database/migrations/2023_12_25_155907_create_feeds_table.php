@@ -17,8 +17,9 @@ return new class extends Migration
             $table->id();
             $table->integer('source_id');
             $table->string('title'); // Title of the feed item
-            $table->text('description')->nullable(); // Description of the feed item
-            $table->text('content')->nullable(); // Description of the feed item
+            $table->longText('description')->nullable(); // Description of the feed item
+            $table->longText('content')->nullable(); // Description of the feed item
+            $table->longText('clean_content')->nullable();//Strip those html tags
             $table->string('link')->nullable(); // Link to the original article
             $table->string('guid')->nullable(); // Unique identifier for the feed item
             $table->json('categories')->nullable();

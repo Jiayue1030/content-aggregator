@@ -6,11 +6,13 @@
     "homepage": "https://github.com/arifszn/pandora",
     "require": {
         "php": "^8.2",
+        "ext-zip": "^1.21",
         "fabpot/goutte": "^4.0",
         "guzzlehttp/guzzle": "^7.8",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.7",
+        "phpoffice/phpword": "^1.2",
         "rap2hpoutre/laravel-log-viewer": "^2.2",
         "roach-php/laravel": "^2.0",
         "symfony/dom-crawler": "^6.0",

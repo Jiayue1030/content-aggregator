@@ -48,13 +48,14 @@ class InfoEntry extends Base
     }
 
     public function feeds(){
-        return $this->hasManyThrough(Feed::class,
-                                    UserFeed::class,
-                                    'feed_id',
-                                    'id',
-                                    'origin_id',
-                                    'feed_id'
-                                );
+        return $this->hasMany(UserFeed::class,'feed_id','origin_id');
+        // return $this->hasManyThrough(Feed::class,
+        //                             UserFeed::class,
+        //                             'feed_id',
+        //                             'id',
+        //                             'origin_id',
+        //                             'feed_id'
+        //                         );
     }
 
     public function getAllowedInfoType(){

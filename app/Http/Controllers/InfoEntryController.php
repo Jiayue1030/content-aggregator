@@ -50,7 +50,7 @@ class InfoEntryController extends Controller
     //From an info type(category,tag), get the list of origins(sources,feeds)
     public function getOriginFromInfoType(Request $request,$origin,$infoType,$infoTypeId){
         $originList = null;
-        if(!($infoType == 'category' || $infoType=='feed')){
+        if(!($infoType == 'category' || $infoType=='tag')){
             return $this->error('This info type is not supported:'.$infoType);
         }
         if($origin=='source'){
@@ -59,9 +59,11 @@ class InfoEntryController extends Controller
                             ->where('user_id',$request->user()->id)
                             ->where('type_id',$infoTypeId)->get();
         }elseif($origin=='feed'){
-            $originList =  InfoEntry::with('feeds')
+            $originList =  InfoEntry::with('info')
+                            ->with('feeds')
                             ->where('user_id',$request->user()->id)
                             ->where('type_id',$infoTypeId)->get();
+            // $originList = $originList->pluck('category.info','feeds');
         }else{
             return $this->error('This origin type is not supported:'.$origin);
         }

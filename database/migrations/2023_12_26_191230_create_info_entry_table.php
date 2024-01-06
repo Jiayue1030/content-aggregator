@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('info_entries', function (Blueprint $table) {
             $table->id();
             $table->integer('user_id');
-            $table->integer('info_id');
+            // $table->integer('info_id');
             $table->enum('type', ['category', 'tag','list','note']);
             $table->integer('type_id');
             $table->enum('origin',['feed','source']);
