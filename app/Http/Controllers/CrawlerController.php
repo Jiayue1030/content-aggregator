@@ -12,6 +12,8 @@ use Weidner\Goutte\GoutteFacade as Goutte;
 use Illuminate\Support\Facades\Response;
 use GuzzleHttp\Exception\ClientException;
 use SimplePie\Author;
+use \DOMDocument;
+use DOMXPath;
 
 class CrawlerController extends Controller
 {
@@ -45,6 +47,7 @@ class CrawlerController extends Controller
 
     private function fetchWebsiteContents($url){
         $client = new GuzzleClient();
+        // dd($client->get($url)->getBody()->getContents());
         try {
             $response = $client->get($url);
         } catch (ClientException $e) {
@@ -130,27 +133,81 @@ class CrawlerController extends Controller
     //Return the RSS feeds information
     public function readRssItems($rssUrl){
         $f = FeedReader::read($rssUrl);
-        $rssItems = $f->strip_htmltags->get_items();
+        $rssItems = $f->get_items();
         $rssItemsData = [];
 
         foreach ($rssItems as $rssItem) {
-            $rssItemsData[] = [
+            $itemData = [
                 'title' => $rssItem->get_title(),
                 'description' => $rssItem->get_description(),
                 'content' => $rssItem->get_content(),
-                'clean_content' => $rssItem->strip_htmltags(array_merge($rssItem->strip_htmltags, array('h1', 'a', 'img'))),
                 'link' => $rssItem->get_link(),
                 'guid' => $rssItem->get_id(),
                 'authors' => $rssItem->get_authors(),
                 'categories' => $rssItem->get_categories(),
                 'pubdate' => $rssItem->get_date('Y-m-d H:i:s'),
-                //TODO: convert into correct datatime format
-                // 'contents' => $rssItem->get_content(),
             ];
+        
+            // Check if 'description' is equal to 'content' for the current $rssItem
+            if ($itemData['description'] == $itemData['content']) {
+                // Fetch content from the link
+                $linkContent = $this->getContentFromLink($itemData['link']);
+                // dd($linkContent);
+                $itemData['content'] = $linkContent;
+            }
+        
+            $rssItemsData[] = $itemData;
         }
         // dd($rssItemsData);
         return $rssItemsData;
         //TODO: last check point?
+
     }
+
+    public function getContentFromLink($link){
+        // $link = $request->link;
+        $websiteContent = $this->fetchWebsiteContents($link)->getBody()->getContents();
+        $htmlContent = $websiteContent;
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($htmlContent);
+        libxml_clear_errors();
+        $bodyContents = "";
+        $bodyNodeList = $dom->getElementsByTagName('body');
+        if ($bodyNodeList->length > 0) {
+            $bodyNode = $bodyNodeList->item(0);
+            foreach ($bodyNode->childNodes as $node) {
+                // Exclude specific elements like <header> and <nav>
+                if (!in_array(strtolower($node->nodeName), ['header', 'nav'])) {
+                    $bodyContents .= $dom->saveHTML($node);
+                }
+            }
+        }
+        // Remove elements by tag name
+        $elementsToRemove = ['header', 'nav', 'script'];
+        foreach ($elementsToRemove as $tagName) {
+            $elements = $dom->getElementsByTagName($tagName);
+            foreach ($elements as $element) {
+                $element->parentNode->removeChild($element);
+            }
+        }
+
+        // Get contents inside the <article> tag
+        $xpath = new DOMXPath($dom);
+        $articleContents = '';
+
+        $articleNodeList = $xpath->query('//article/*');
+        if ($articleNodeList->length > 0) {
+            foreach ($articleNodeList as $node) {
+                $articleContents .= $dom->saveHTML($node);
+            }
+        } else {
+            $articleContents = $dom->saveHTML();
+        }
+        $articleContents = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $articleContents);
+        return strip_tags($articleContents);
+    }
+
+    
 
 }

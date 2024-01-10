@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('rss_url')->nullable(); //real rss subscribe url
             $table->string('link')->nullable(); //Public website from the rss source
             $table->integer('created_by');
-            $table->string('description')->nullable();
+            $table->longText('description')->nullable();
             $table->string('type')->nullable();
             $table->boolean('is_rss')->nullable()->default(false);
             $table->string('language')->nullable()->default('en');

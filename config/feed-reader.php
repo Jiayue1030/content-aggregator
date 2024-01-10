@@ -58,7 +58,7 @@ return [
              *
              * @var boolean
              */
-            'order-by-date' => false,
+            'order-by-date' => true,
 
             /**
              * Whether it should verify SSL, set false to make it work with self-signed certificates

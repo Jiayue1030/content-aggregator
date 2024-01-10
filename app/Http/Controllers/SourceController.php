@@ -153,9 +153,11 @@ class SourceController extends Controller
 
     public function searchUrl(Request $request)
     {
-        $url = $request->url;
-        $crawler = new CrawlerController();
-        return $crawler->getContents($url);
+        // $url = $request->url;
+        // $crawler = new CrawlerController();
+        // return $crawler->getContents($url);
+
+        return $this->readRss($request);
     }
 
     public function getUserSourceList(Request $request){

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Shared\Html;
 use PhpOffice\PhpWord\IOFactory;
 use App\Http\Controllers\FeedController;
 use App\Models\UserSource;
@@ -25,13 +26,15 @@ class ExportController extends Controller
     public function exportFeedsContentFromSource(Request $request,$userSourceId)
     {
         $userId = $request->user()->id;
-        $userSource = UserSource::where('id',$userSourceId)->where('user_id',$userId)
+        $userSource = UserSource::where('id',$userSourceId)
+                      ->where('user_id',$userId)
                       ->get()->first();
         $feedsContentFromSource = null;
 
         if($userSource){
             $feedsContentFromSource = Source::where('id',$userSource->source_id)
                         ->with('feeds')->get()->first();
+            // dd($feedsContentFromSource);
             $this->exportToWord($feedsContentFromSource);
         }else{
             $this->error('User did not own this source:'.$userSourceId);
@@ -39,51 +42,35 @@ class ExportController extends Controller
         return $feedsContentFromSource;
     }
 
-    public function exportToWord2(Request $request,$type='source',$selectedFeeds=null)
+    public function exportFeedsContentFromSource2(Request $request)
     {
-        
-        $phpWord = new PhpWord();
-
-        // if($type!=null){
-        //     if(in_array($type,$this->allowedType)){
-        //         switch($type){
-        //             case $type=='category' && isset($request->category_id):
-        //                 $feeds = $this->getFeedsFromCategory($request->category_id);
-        //                 break;
-        //             case $type=='source' && isset($request->source_id):
-        //                 $feeds = $this->getFeedsFromSource($request->source_id);
-        //                 break;
-        //             case $type=='tag' && isset($request->tag_id):
-        //                 $feeds = $this->getFeedsFromTag($request->tag_id);
-        //                 break;
-        //             case $type=='feed' && isset($request->feed_id):
-        //                 $feeds = $this->getFeedsFromCategory($request->feed_id);
-        //                 break;
-        //             case $type==null:
-        //                 $feeds = $this->getAllFeeds($request->user()->id);
-        //         }
-        //     }else{
-        //         return $this->error('The type is not supported:'.$type);
-        //     }
-        // }
-    
-        $section = $phpWord->addSection();
-
-        foreach ($feeds as $feed) {
-            // $feedContent = $this->feedController->getUserFeed($request,$feed->id);
-            $section->addText($feed['title']);
-            $section->addText($feed['description']);
-            // Add other feed details as needed
-            $section->addText(''); // Add a blank line between feeds
+        if(!isset($request->user_source_ids)){
+            return $this->error('Need at least one source to export feeds!');
         }
 
-        $filename = 'exported_feeds.docx';
+        $userSourceIds = isset($request->user_source_ids)?(array)$request->user_source_ids:0;
+        $userId = $request->user()->id;
+        $feedsContentFromSources = [];
+        // dd();
+        foreach ($userSourceIds as $userSourceId) {
+            $userSource = UserSource::where('id', $userSourceId)
+                ->where('user_id', $userId)
+                ->first();
+            // dd($userSource);
+            if ($userSource) {
+                $feedsContentFromSource = Source::where('id', $userSource->source_id)
+                    ->with('feeds')->first();
 
-        $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
-        $objWriter->save($filename);
+                $this->exportToWord($feedsContentFromSource);
+                $feedsContentFromSources[] = $feedsContentFromSource;
+            } else {
+                $this->error('User did not own this source:' . $userSourceId);
+            }
+        }
 
-        return response()->download($filename)->deleteFileAfterSend(true);
+        return $feedsContentFromSources;
     }
+
 
     public function exportToWord($contents)
     {
@@ -92,28 +79,29 @@ class ExportController extends Controller
         if($contents==null){
             return $this->error('No feeds able to export');
         }
-        $sourceTitle = $itemSection->addText('Title: '.$contents['title']);
-        $sourceRssTitle = $itemSection->addLink('RSS Url: '.$contents['rss_url']);
-        $sourceDesc = $itemSection->addText('Desc: '.$contents['description']);
+        $itemSection->addText('Title: '.$contents['title'],array('bold' => true));
+        $itemSection->addLink('RSS Url: '.$contents['rss_url']);
+        $itemSection->addText('Website Description: '.$contents['description']);
+        $itemSection->addText(''); // Add a blank line between feeds
         // $sourceMetaData = $titleSection->addText($contents['metadata']);
-
-        // dd($items);
+        
+        // dd($contents);
         foreach ($contents->feeds as $item) {
-            // dd($item);
             // $feedContent = $this->feedController->getUserFeed($request,$feed->id);
-            $itemSection->addText($item['title']);
-            $itemSection->addText($item['description']);
-            $itemSection->addText($item['clean_content']);
+            $itemSection->addText('Title:'.$item['title'],array('bold' => true));
+            $itemSection->addText('Description:',array('bold' => true));
+            $itemSection->addText(strip_tags($item['description']));
+            $itemSection->addText('Content:',array('bold' => true));
+            $itemSection->addText(strip_tags($item['content']));
+            $itemSection->addText('Link:',array('bold' => true));
             $itemSection->addLink($item['link']);
-            $itemSection->addText($item['pubdate']);
-            // $itemSection->addText($item['authors']);
-            // Add other feed details as needed
+            $itemSection->addText('Publication Date:'.$item['pubdate'],array('bold' => true));
             $itemSection->addText(''); // Add a blank line between feeds
         }
 
         $datetime = now()->format('Y-m-d_H-i-s');
 
-        $filename = 'exported_feeds_'.$datetime.'.docx';
+        $filename = 'exported_feeds_'.$datetime.'-'.$contents['title'].'.docx';
 
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
         $objWriter->save($filename);
