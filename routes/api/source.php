@@ -24,7 +24,7 @@ Route::middleware(['auth:user'])->group(function(){
     Route::get('/source/get/{id}',[SourceController::class, 'getUserSource']);
 
     //To add a source to user's sources list
-    Route::post('/source/add',[SourceController::class, 'addSource']);
+    Route::post('/source/add',[SourceController::class, 'addSource'])->name('source.add');
     Route::post('/source/add2',[SourceController::class, 'addSource2']);
 
 
