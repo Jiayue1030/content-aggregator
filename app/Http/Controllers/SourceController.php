@@ -96,7 +96,7 @@ class SourceController extends Controller
     public function addSource(Request $request)
     {
         $feedController = new FeedController();
-        $existingSource = $this->checkUrlExistence($request->url);
+        $existingSource = $this->checkUrlExistence(urldecode($request->url));
         // dd($existingSource);
         $userId = $request->user()->id;
 
@@ -244,7 +244,7 @@ class SourceController extends Controller
     }
 
     public function readRss(Request $request){
-        $url = $request->url;
+        $url = urldecode($request->url);
         $crawler = new CrawlerController();
         return $crawler->readRss($url);
     }
@@ -253,7 +253,7 @@ class SourceController extends Controller
     {
         $crawler = new CrawlerController();
         $created_by = $request->user()->id;
-        $url = $request->url;
+        $url = urldecode($request->url);
         
         $rssResult = $crawler->readRss($url);
         $sourceData = $rssResult!=null?json_decode($rssResult->content()):$rssResult;

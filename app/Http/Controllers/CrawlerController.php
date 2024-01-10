@@ -164,6 +164,10 @@ class CrawlerController extends Controller
 
     }
 
+    public function getContentFromLinkTest(Request $request){
+        return $this->getContentFromLink(urldecode($request->link));
+    }
+
     public function getContentFromLink($link){
         // $link = $request->link;
         $websiteContent = $this->fetchWebsiteContents($link)->getBody()->getContents();

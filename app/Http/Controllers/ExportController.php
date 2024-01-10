@@ -92,6 +92,7 @@ class ExportController extends Controller
             $itemSection->addText('Description:',array('bold' => true));
             $itemSection->addText(strip_tags($item['description']));
             $itemSection->addText('Content:',array('bold' => true));
+            // \PhpOffice\PhpWord\Shared\Html::addHtml($itemSection, $item['content'],true);
             $itemSection->addText(strip_tags($item['content']));
             $itemSection->addText('Link:',array('bold' => true));
             $itemSection->addLink($item['link']);
@@ -106,7 +107,7 @@ class ExportController extends Controller
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
         $objWriter->save($filename);
 
-        return response()->download($filename)->deleteFileAfterSend(true);
+        dd(response()->download($filename));
     }
 
     public function getFeedsFromCategory(Request $request,$categoryId)

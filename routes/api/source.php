@@ -99,6 +99,6 @@ Route::middleware(['auth:user'])->group(function(){
 
      Route::get('test/jobs',[UpdateFeedsJob::class,'handle']);
 
-     Route::post('test/getContentFromLink',[CrawlerController::class,'getContentFromLink']);
+     Route::post('test/getContentFromLink',[CrawlerController::class,'getContentFromLinkTest']);
 
 });

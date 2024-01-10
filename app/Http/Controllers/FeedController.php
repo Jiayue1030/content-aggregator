@@ -16,7 +16,7 @@ class FeedController extends Controller
     {
         $userId = $request->user()->id;
         $crawler = new CrawlerController();
-        $rssUrl = $request->url;
+        $rssUrl = urldecode($request->url);
         $rssResults = $crawler->readRssItems($rssUrl);
 
         // Get the RSS results which are 100 days earlier than the request date
