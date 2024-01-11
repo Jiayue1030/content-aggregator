@@ -51,16 +51,24 @@ class ExportController extends Controller
         }
 
         $userSourceIds = isset($request->user_source_ids)?(array)$request->user_source_ids:0;
+
+        
         $userId = $request->user()->id;
         $feedsContentFromSources = [];
         // dd();
         foreach ($userSourceIds as $userSourceId) {
-            $userSource = UserSource::where('id', $userSourceId)
-                ->where('user_id', $userId)
-                ->first();
+            /**
+             * Temp change to source first
+             * 
+             */
+            // $userSource = UserSource::where('id', $userSourceId)
+            //     ->where('user_id', $userId)
+            //     ->first();
+            
+            $userSource = Source::where('id',$userSourceId)->first();
             // dd($userSource);
             if ($userSource) {
-                $feedsContentFromSource = Source::where('id', $userSource->source_id)
+                $feedsContentFromSource = Source::where('id', $userSource->id)
                     ->with('feeds')->first();
 
                 $this->exportToWord($feedsContentFromSource);
