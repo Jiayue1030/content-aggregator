@@ -12,6 +12,7 @@ use App\Models\Source;
 use Carbon\Carbon;
 use DOMDocument;
 use DOMXPath;
+use Illuminate\Support\Facades\Storage;
 
 class ExportController extends Controller
 {
@@ -19,10 +20,12 @@ class ExportController extends Controller
     protected $allowedType = ['category','source','tag','feed'];
     protected $feedController = null;
     protected $userFeedController = null;
+    protected $fileController = null;
 
     public function __construct() {
         $this->feedController = new FeedController();
         $this->userFeedController = new UserFeedController();
+        $this->fileController = new FileController();
     }
 
     public function exportFeedsContentFromSource(Request $request,$userSourceId)
@@ -70,15 +73,15 @@ class ExportController extends Controller
             if ($userSource) {
                 $feedsContentFromSource = Source::where('id', $userSource->id)
                     ->with('feeds')->first();
-
-                $this->exportToWord($feedsContentFromSource);
+                    https://content-aggregator-bucket.s3.ap-southeast-2.amazonaws.com/659f98f447ff0_exported_feeds_2024-01-11_07-29-56-Business+Green.docx
+                return $this->exportToWord($feedsContentFromSource);
                 $feedsContentFromSources[] = $feedsContentFromSource;
             } else {
-                $this->error('User did not own this source:' . $userSourceId);
+                return $this->error('User did not own this source:' . $userSourceId);
             }
         }
 
-        return $feedsContentFromSources;
+        // return $feedsContentFromSources;
     }
 
 
@@ -100,7 +103,10 @@ class ExportController extends Controller
             // $feedContent = $this->feedController->getUserFeed($request,$feed->id);
             $itemSection->addText('Title:'.$item['title'],array('bold' => true));
             $itemSection->addText('Description:',array('bold' => true));
-            $itemSection->addText(strip_tags($item['description']));
+            // dd(strip_tags($item['description']));
+            $description = preg_replace('/^\s*[\r\n]+/m', '',strip_tags($item['description']));
+            // dd($description);
+            $itemSection->addText($description);
             $itemSection->addText('Content:',array('bold' => true));
             libxml_use_internal_errors(true); 
             $doc = new DOMDocument();
@@ -113,6 +119,8 @@ class ExportController extends Controller
             $itemSection->addLink($item['link']);
             $itemSection->addText('Publication Date:'.$item['pubdate'],array('bold' => true));
             $itemSection->addText(''); // Add a blank line between feeds
+            $itemSection->addText('---------------------------------------------------------------------------------------------------------------------------------------'); // Add a blank line between feeds
+
             // dd($itemSection);
         }
 
@@ -120,10 +128,12 @@ class ExportController extends Controller
 
         $filename = 'exported_feeds_'.$datetime.'-'.$contents['title'].'.docx';
 
-        $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
+        $objWriter = IOFactory::createWriter($phpWord, 'Word2007', $download = true);
+        
+        header("Content-Disposition: attachment; filename='.$filename.'\''.");
         $objWriter->save($filename);
-        // dd($phpWord);
-        return response()->download($filename);
+        return $this->fileController->downloadFile($filename);
+        // return response()->download($filename);
     }
 
     public function parseContents($html){
