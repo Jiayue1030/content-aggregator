@@ -65,7 +65,7 @@ class ExportController extends Controller
                 $feedsContentFromSource = Source::where('id', $userSource->id)
                     ->with('feeds')->first();
                 return $this->exportToWord($feedsContentFromSource);
-                $feedsContentFromSources[] = $feedsContentFromSource;
+                // $feedsContentFromSources[] = $feedsContentFromSource;
             } else {
                 return $this->error('User did not own this source:' . $userSourceId);
             }
@@ -120,8 +120,8 @@ class ExportController extends Controller
         
         header("Content-Disposition: attachment; filename='.$filename.'\''.");
         $objWriter->save($filename);
-        // return $this->fileController->downloadFile($filename);
-        return response()->download($filename);
+        return $this->fileController->downloadFile($filename);
+        // return response()->download($filename);
     }
 
     public function parseContents($html){
