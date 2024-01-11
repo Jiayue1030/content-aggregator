@@ -73,7 +73,7 @@ class ExportController extends Controller
     }
 
 
-    public function exportToWord($contents)
+    public function exportToWord($userId,$contents)
     {
         $phpWord = new PhpWord();
         $itemSection = $phpWord->addSection();
@@ -114,7 +114,7 @@ class ExportController extends Controller
 
         $datetime = now()->format('Y-m-d_H-i-s');
 
-        $filename = 'exported_feeds_'.$datetime.'-'.$contents['title'].'.docx';
+        $filename = 'exported_feeds_'.$datetime.'-'.$contents['title'].'user_id_'.$userId.'.docx';
 
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007', $download = true);
         
