@@ -47,7 +47,7 @@ class CrawlerController extends Controller
 
     private function fetchWebsiteContents($url){
         $client = new GuzzleClient();
-        // dd($client->get($url)->getBody()->getContents());
+        // $client->get($url)->getBody()->getContents();
         try {
             $response = $client->get($url);
         } catch (ClientException $e) {
@@ -130,17 +130,23 @@ class CrawlerController extends Controller
         
     }
 
+    public function readRssItemsTest(Request $request){
+        $this->readRssItems($request->url);
+    }
+
     //Return the RSS feeds information
     public function readRssItems($rssUrl){
         $f = FeedReader::read($rssUrl);
         $rssItems = $f->get_items();
         $rssItemsData = [];
-
         foreach ($rssItems as $rssItem) {
             $itemData = [
                 'title' => $rssItem->get_title(),
                 'description' => $rssItem->get_description(),
-                'content' => $rssItem->get_content(),
+                // 'content' => $rssItem->get_item_tags($rssItem->get_link(),'content')!=null?
+                //                 $rssItem->get_content():
+                //                 $this->getContentFromLink($rssItem->get_link()),
+                'content'=>$rssItem->get_content(),
                 'link' => $rssItem->get_link(),
                 'guid' => $rssItem->get_id(),
                 'authors' => $rssItem->get_authors(),
@@ -148,17 +154,18 @@ class CrawlerController extends Controller
                 'pubdate' => $rssItem->get_date('Y-m-d H:i:s'),
             ];
         
-            // Check if 'description' is equal to 'content' for the current $rssItem
+            //Check if 'description' is equal to 'content' for the current $rssItem
             if ($itemData['description'] == $itemData['content']) {
-                // Fetch content from the link
+                echo('same');
                 $linkContent = $this->getContentFromLink($itemData['link']);
-                // dd($linkContent);
                 $itemData['content'] = $linkContent;
+            }else{
+                echo($itemData['content']);
+                echo('想死啊');
             }
         
             $rssItemsData[] = $itemData;
         }
-        // dd($rssItemsData);
         return $rssItemsData;
         //TODO: last check point?
 
@@ -179,21 +186,21 @@ class CrawlerController extends Controller
         $bodyContents = "";
         $bodyNodeList = $dom->getElementsByTagName('body');
         if ($bodyNodeList->length > 0) {
-            $bodyNode = $bodyNodeList->item(0);
-            foreach ($bodyNode->childNodes as $node) {
-                // Exclude specific elements like <header> and <nav>
-                if (!in_array(strtolower($node->nodeName), ['header', 'nav'])) {
-                    $bodyContents .= $dom->saveHTML($node);
-                }
+        $bodyNode = $bodyNodeList->item(0);
+        foreach ($bodyNode->childNodes as $node) {
+        // Exclude specific elements like <header> and <nav>
+        if (!in_array(strtolower($node->nodeName), ['header', 'nav'])) {
+        $bodyContents .= $dom->saveHTML($node);
+        }
             }
         }
         // Remove elements by tag name
         $elementsToRemove = ['header', 'nav', 'script'];
         foreach ($elementsToRemove as $tagName) {
-            $elements = $dom->getElementsByTagName($tagName);
-            foreach ($elements as $element) {
-                $element->parentNode->removeChild($element);
-            }
+        $elements = $dom->getElementsByTagName($tagName);
+        foreach ($elements as $element) {
+        $element->parentNode->removeChild($element);
+        }
         }
 
         // Get contents inside the <article> tag
@@ -202,16 +209,13 @@ class CrawlerController extends Controller
 
         $articleNodeList = $xpath->query('//article/*');
         if ($articleNodeList->length > 0) {
-            foreach ($articleNodeList as $node) {
-                $articleContents .= $dom->saveHTML($node);
-            }
+        foreach ($articleNodeList as $node) {
+            $articleContents .= $dom->saveHTML($node);
+        }
         } else {
             $articleContents = $dom->saveHTML();
         }
         $articleContents = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $articleContents);
         return strip_tags($articleContents);
     }
-
-    
-
 }

@@ -45,7 +45,7 @@ class SourceService
     public function checkUrlExistence(string $url)
     {
         $source = Source::where('url', $url)->get()->first();
-        dd($url,$source);
+        // dd($url,$source);
         return $source;
     }
 

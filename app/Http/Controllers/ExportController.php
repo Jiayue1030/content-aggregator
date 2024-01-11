@@ -10,6 +10,8 @@ use App\Http\Controllers\FeedController;
 use App\Models\UserSource;
 use App\Models\Source;
 use Carbon\Carbon;
+use DOMDocument;
+use DOMXPath;
 
 class ExportController extends Controller
 {
@@ -92,12 +94,18 @@ class ExportController extends Controller
             $itemSection->addText('Description:',array('bold' => true));
             $itemSection->addText(strip_tags($item['description']));
             $itemSection->addText('Content:',array('bold' => true));
-            // \PhpOffice\PhpWord\Shared\Html::addHtml($itemSection, $item['content'],true);
-            $itemSection->addText(strip_tags($item['content']));
+            libxml_use_internal_errors(true); 
+            $doc = new DOMDocument();
+            $doc->loadHTML(strip_tags($item['content'],'<body><div><p><h1><h2><h3><h4><h5><h6><p>'));
+            // dd($doc->saveHTML());
+            \PhpOffice\PhpWord\Shared\Html::addHtml($itemSection,$doc->saveHTML(),true,false);
+            
+            // $itemSection->addText(strip_tags($item['content']));
             $itemSection->addText('Link:',array('bold' => true));
             $itemSection->addLink($item['link']);
             $itemSection->addText('Publication Date:'.$item['pubdate'],array('bold' => true));
             $itemSection->addText(''); // Add a blank line between feeds
+            // dd($itemSection);
         }
 
         $datetime = now()->format('Y-m-d_H-i-s');
@@ -106,8 +114,16 @@ class ExportController extends Controller
 
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
         $objWriter->save($filename);
+        // dd($phpWord);
+        return response()->download($filename);
+    }
 
-        dd(response()->download($filename));
+    public function parseContents($html){
+        $html = str_replace(["\n", "\r"], '', $html);
+        $html = str_replace(['&lt;', '&gt;', '&amp;', '&quot;'], ['_lt_', '_gt_', '_amp_', '_quot_'], $html);
+        $html = html_entity_decode($html, ENT_QUOTES, 'UTF-8');
+        $html = str_replace('&', '&amp;', $html);
+        $html = str_replace(['_lt_', '_gt_', '_amp_', '_quot_'], ['&lt;', '&gt;', '&amp;', '&quot;'], $html);
     }
 
     public function getFeedsFromCategory(Request $request,$categoryId)

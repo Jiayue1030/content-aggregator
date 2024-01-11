@@ -42,7 +42,7 @@ Route::middleware(['auth:user'])->group(function(){
     Route::put('/feed/update/{id}',[FeedController::class,'updateFeed']);
     Route::post('/feed/delete/{id}',[FeedController::class,'deleteFeed']);
     
-    Route::post('/read/rss2',[CrawlerController::class,'readRssItems']);
+    Route::post('/read/rss2',[CrawlerController::class,'readRssItemsTest']);
 
     /**
      * User Contents Management: Category,Tag,Note,List,Folder
