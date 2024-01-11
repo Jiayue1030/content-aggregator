@@ -86,7 +86,7 @@ Route::middleware(['auth:user'])->group(function(){
     Route::get('info/{originType}/get/{originId}',[InfoEntryController::class,'getInfoTypesFromOrigin']);
     
     // Route::get('/export/feeds/{userSourceId}', [ExportController::class,'exportFeedsContentFromSource']);
-    Route::post('/export/feeds', [ExportController::class,'exportFeedsContentFromSource2']);
+    Route::post('/export/feeds', [ExportController::class,'exportFeedsContentFromSource']);
     
     Route::get('/get/feeds/with_category',[UserFeedController::class,'getUserFeedsWithCategory']);
 

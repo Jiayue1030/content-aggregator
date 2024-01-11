@@ -31,13 +31,15 @@ class ExportController extends Controller
     public function exportFeedsContentFromSource(Request $request,$userSourceId)
     {
         $userId = $request->user()->id;
-        $userSource = UserSource::where('id',$userSourceId)
-                      ->where('user_id',$userId)
-                      ->get()->first();
+        $userSource = Source::where('id',$userSourceId)->first();
+
+        // $userSource = UserSource::where('id',$userSourceId)
+        //               ->where('user_id',$userId)
+        //               ->get()->first();
         $feedsContentFromSource = null;
 
         if($userSource){
-            $feedsContentFromSource = Source::where('id',$userSource->source_id)
+            $feedsContentFromSource = Source::where('id',$userSource->id)
                         ->with('feeds')->get()->first();
             // dd($feedsContentFromSource);
             return $this->exportToWord($feedsContentFromSource);
@@ -132,8 +134,8 @@ class ExportController extends Controller
         
         header("Content-Disposition: attachment; filename='.$filename.'\''.");
         $objWriter->save($filename);
-        return $this->fileController->downloadFile($filename);
-        // return response()->download($filename);
+        // return $this->fileController->downloadFile($filename);
+        return response()->download($filename);
     }
 
     public function parseContents($html){
