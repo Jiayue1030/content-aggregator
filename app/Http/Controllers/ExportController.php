@@ -57,7 +57,6 @@ class ExportController extends Controller
 
         $userSourceIds = isset($request->user_source_ids)?(array)$request->user_source_ids:0;
 
-        
         $userId = $request->user()->id;
         $feedsContentFromSources = [];
         // dd();
@@ -75,7 +74,6 @@ class ExportController extends Controller
             if ($userSource) {
                 $feedsContentFromSource = Source::where('id', $userSource->id)
                     ->with('feeds')->first();
-                    https://content-aggregator-bucket.s3.ap-southeast-2.amazonaws.com/659f98f447ff0_exported_feeds_2024-01-11_07-29-56-Business+Green.docx
                 return $this->exportToWord($feedsContentFromSource);
                 $feedsContentFromSources[] = $feedsContentFromSource;
             } else {
