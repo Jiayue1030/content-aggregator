@@ -59,16 +59,14 @@ class ExportController extends Controller
         $userId = $request->user()->id;
         $feedsContentFromSources = [];
         // dd();
-        foreach ($userSourceIds as $userSourceId) {
-            $userSource = Source::where('id',$userSourceId)->first();
-            if ($userSource) {
-                $feedsContentFromSource = Source::where('id', $userSource->id)
-                    ->with('feeds')->first();
-                return $this->exportToWord($userId,$feedsContentFromSource);
-                // $feedsContentFromSources[] = $feedsContentFromSource;
-            } else {
-                return $this->error('User did not own this source:' . $userSourceId);
-            }
+        $userSource = Source::where('id',$userSourceIds)->first();
+        if ($userSource) {
+            $feedsContentFromSource = Source::where('id', $userSource->id)
+                ->with('feeds')->first();
+            return $this->exportToWord($userId,$feedsContentFromSource);
+            // $feedsContentFromSources[] = $feedsContentFromSource;
+        } else {
+            return $this->error('User did not own this source:' . $userSourceIds);
         }
     }
 
@@ -114,7 +112,7 @@ class ExportController extends Controller
 
         $datetime = now()->format('Y-m-d_H-i-s');
 
-        $filename = 'exported_feeds_'.$datetime.'-'.$contents['title'].'user_id_'.$userId.'.docx';
+        $filename = 'exported_feeds_'.$datetime.'-'.$contents['title'].'_user_id_'.$userId.'.docx';
 
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007', $download = true);
         
