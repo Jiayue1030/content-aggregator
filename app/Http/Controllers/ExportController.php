@@ -54,7 +54,7 @@ class ExportController extends Controller
         if(!isset($request->user_source_ids)){
             return $this->error('Need at least one source to export feeds!');
         }
-
+        echo($request->user_source_ids);
         $userSourceIds = isset($request->user_source_ids)?(array)$request->user_source_ids:0;
 
         $userId = $request->user()->id;
