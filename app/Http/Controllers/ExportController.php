@@ -42,7 +42,7 @@ class ExportController extends Controller
             $feedsContentFromSource = Source::where('id',$userSource->id)
                         ->with('feeds')->get()->first();
             // dd($feedsContentFromSource);
-            return $this->exportToWord($feedsContentFromSource);
+            return $this->exportToWord($userId,$feedsContentFromSource);
         }else{
             return $this->error('User did not own this source:'.$userSourceId);
         }
@@ -64,7 +64,7 @@ class ExportController extends Controller
             if ($userSource) {
                 $feedsContentFromSource = Source::where('id', $userSource->id)
                     ->with('feeds')->first();
-                return $this->exportToWord($feedsContentFromSource);
+                return $this->exportToWord($userId,$feedsContentFromSource);
                 // $feedsContentFromSources[] = $feedsContentFromSource;
             } else {
                 return $this->error('User did not own this source:' . $userSourceId);
