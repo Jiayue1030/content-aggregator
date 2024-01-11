@@ -112,7 +112,7 @@ class ExportController extends Controller
 
         $datetime = now()->format('Y-m-d_H-i-s');
 
-        $filename = 'exported_feeds_'.$datetime.'-'.$contents['title'].'_user_id_'.$userId.'.docx';
+        $filename = 'exported_feeds_'.$datetime.'-'.str_replace(' ', '_',$contents['title']).'_user_id_'.$userId.'.docx';
 
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007', $download = true);
         
