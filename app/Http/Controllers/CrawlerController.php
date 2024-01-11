@@ -155,14 +155,14 @@ class CrawlerController extends Controller
             ];
         
             //Check if 'description' is equal to 'content' for the current $rssItem
-            if ($itemData['description'] == $itemData['content']) {
-                echo('same');
-                $linkContent = $this->getContentFromLink($itemData['link']);
-                $itemData['content'] = $linkContent;
-            }else{
-                echo($itemData['content']);
-                echo('想死啊');
-            }
+            // if ($itemData['description'] == $itemData['content']) {
+            //     // echo('same');
+            //     $linkContent = $this->getContentFromLink($itemData['link']);
+            //     $itemData['content'] = $linkContent;
+            // }else{
+            //     echo($itemData['content']);
+            //     // echo('想死啊');
+            // }
         
             $rssItemsData[] = $itemData;
         }
@@ -183,39 +183,39 @@ class CrawlerController extends Controller
         libxml_use_internal_errors(true);
         $dom->loadHTML($htmlContent);
         libxml_clear_errors();
-        $bodyContents = "";
-        $bodyNodeList = $dom->getElementsByTagName('body');
-        if ($bodyNodeList->length > 0) {
-        $bodyNode = $bodyNodeList->item(0);
-        foreach ($bodyNode->childNodes as $node) {
-        // Exclude specific elements like <header> and <nav>
-        if (!in_array(strtolower($node->nodeName), ['header', 'nav'])) {
-        $bodyContents .= $dom->saveHTML($node);
-        }
-            }
-        }
-        // Remove elements by tag name
-        $elementsToRemove = ['header', 'nav', 'script'];
-        foreach ($elementsToRemove as $tagName) {
-        $elements = $dom->getElementsByTagName($tagName);
-        foreach ($elements as $element) {
-        $element->parentNode->removeChild($element);
-        }
-        }
+        $articleContents = "";
+        $articleContents = $dom->getElementsByTagName('body');
+        // if ($bodyNodeList->length > 0) {
+        //     $bodyNode = $bodyNodeList->item(0);
+        //     foreach ($bodyNode->childNodes as $node) {
+        //     // Exclude specific elements like <header> and <nav>
+        //         if (!in_array(strtolower($node->nodeName), ['header', 'nav'])) {
+        //             $bodyContents .= $dom->saveHTML($node);
+        //         }
+        //     }
+        // }
+        // // Remove elements by tag name
+        // $elementsToRemove = ['header', 'nav', 'script'];
+        // foreach ($elementsToRemove as $tagName) {
+        //     $elements = $dom->getElementsByTagName($tagName);
+        //     foreach ($elements as $element) {
+        //         $element->parentNode->removeChild($element);
+        //     }
+        // }
 
-        // Get contents inside the <article> tag
-        $xpath = new DOMXPath($dom);
-        $articleContents = '';
+        // // Get contents inside the <article> tag
+        // $xpath = new DOMXPath($dom);
+        // $articleContents = '';
 
-        $articleNodeList = $xpath->query('//article/*');
-        if ($articleNodeList->length > 0) {
-        foreach ($articleNodeList as $node) {
-            $articleContents .= $dom->saveHTML($node);
-        }
-        } else {
-            $articleContents = $dom->saveHTML();
-        }
-        $articleContents = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $articleContents);
-        return strip_tags($articleContents);
+        // $articleNodeList = $xpath->query('//article/*');
+        // if ($articleNodeList->length > 0) {
+        //     foreach ($articleNodeList as $node) {
+        //         $articleContents .= $dom->saveHTML($node);
+        //     }
+        // } else {
+        //     $articleContents = $dom->saveHTML();
+        // }
+        // $articleContents = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $articleContents);
+        return $articleContents;
     }
 }
