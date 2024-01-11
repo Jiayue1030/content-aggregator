@@ -54,24 +54,13 @@ class ExportController extends Controller
         if(!isset($request->user_source_ids)){
             return $this->error('Need at least one source to export feeds!');
         }
-        var_dump($request->user_source_ids);
-        // $userSourceIds = isset($request->user_source_ids)?(array)$request->user_source_ids:0;
-        // $userSourceIds = $request->user_source_ids
+        $userSourceIds = isset($request->user_source_ids)?$request->user_source_ids:0;
 
-        $userSourceIds = $request->user()->id;
+        $userId = $request->user()->id;
         $feedsContentFromSources = [];
         // dd();
         foreach ($userSourceIds as $userSourceId) {
-            /**
-             * Temp change to source first
-             * 
-             */
-            // $userSource = UserSource::where('id', $userSourceId)
-            //     ->where('user_id', $userId)
-            //     ->first();
-            
             $userSource = Source::where('id',$userSourceId)->first();
-            // dd($userSource);
             if ($userSource) {
                 $feedsContentFromSource = Source::where('id', $userSource->id)
                     ->with('feeds')->first();
@@ -81,8 +70,6 @@ class ExportController extends Controller
                 return $this->error('User did not own this source:' . $userSourceId);
             }
         }
-
-        // return $feedsContentFromSources;
     }
 
 
