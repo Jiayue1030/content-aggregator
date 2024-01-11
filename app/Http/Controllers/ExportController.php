@@ -37,11 +37,11 @@ class ExportController extends Controller
             $feedsContentFromSource = Source::where('id',$userSource->source_id)
                         ->with('feeds')->get()->first();
             // dd($feedsContentFromSource);
-            $this->exportToWord($feedsContentFromSource);
+            return $this->exportToWord($feedsContentFromSource);
         }else{
-            $this->error('User did not own this source:'.$userSourceId);
+            return $this->error('User did not own this source:'.$userSourceId);
         }
-        return $feedsContentFromSource;
+        // return $feedsContentFromSource;
     }
 
     public function exportFeedsContentFromSource2(Request $request)
