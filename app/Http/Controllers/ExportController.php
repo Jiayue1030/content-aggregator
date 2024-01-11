@@ -54,10 +54,11 @@ class ExportController extends Controller
         if(!isset($request->user_source_ids)){
             return $this->error('Need at least one source to export feeds!');
         }
-        echo($request->user_source_ids);
-        $userSourceIds = isset($request->user_source_ids)?(array)$request->user_source_ids:0;
+        var_dump($request->user_source_ids);
+        // $userSourceIds = isset($request->user_source_ids)?(array)$request->user_source_ids:0;
+        // $userSourceIds = $request->user_source_ids
 
-        $userId = $request->user()->id;
+        $userSourceIds = $request->user()->id;
         $feedsContentFromSources = [];
         // dd();
         foreach ($userSourceIds as $userSourceId) {
