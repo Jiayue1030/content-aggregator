@@ -6,28 +6,34 @@ use Illuminate\Http\Request;
 use App\Models\Info;
 use App\Http\Requests\InfoType\AddInfoTypeRequest;
 use App\Http\Requests\InfoType\UpdateInfoTypeRequest;
+use Illuminate\Support\Facades\DB;
 
 class InfoController extends Controller
 {
-    // protected $contentType = ['category', 'tag','list','note'];
+    // protected $contentType = ['category', 'tag','list','note','folder'];
+    protected $infoEntryController = null;
 
-    public function getCategoryList(Request $request){
-        return $this->getInfoTypeList($request,'category');
+    public function __construct() {
+        $this->infoEntryController = new InfoEntryController();
     }
 
-    public function getCategoryDetail(Request $request,$infoTypeId){
-        return $this->getInfoTypeDetail($request,$infoTypeId,'category');
+    public function getFolderList(Request $request){
+        return $this->getInfoTypeList($request,'folder');
     }
 
-    public function addCategory(AddInfoTypeRequest $request){
+    public function getFolderDetail(Request $request,$infoTypeId){
+        return $this->getInfoTypeDetail($request,$infoTypeId,'folder');
+    }
+
+    public function addFolder(AddInfoTypeRequest $request){
         // dd($request->validated());
-        return $this->addInfo($request,'category');
+        return $this->addInfo($request,'folder');
     }
-    public function updateCategory(UpdateInfoTypeRequest $request,$infoTypeId){
-        return $this->updateInfo($request,$infoTypeId,'category');
+    public function updateFolder(UpdateInfoTypeRequest $request,$infoTypeId){
+        return $this->updateInfo($request,$infoTypeId,'folder');
     }
-    public function deleteCategory(Request $request,$infoTypeId){
-        return $this->deleteInfo($request,$infoTypeId,'category');
+    public function deleteFolder(Request $request,$infoTypeId){
+        return $this->deleteInfo($request,$infoTypeId,'folder');
     }
 
     public function getTagList(Request $request){
@@ -51,12 +57,18 @@ class InfoController extends Controller
     }
 
     private function getInfoTypeList(Request $request,$infoType){
+        // dd(DB::table('sources')
+        // ->join('info_entries','sources.id','=','info_entries.origin_id')
+        // ->join('infos','info_entries.type_id','=','infos.id')
+        // ->where('infos.user_id',2)->where('info_entries.origin','source')
+        // ->select('infos.*','info_entries.*','sources.*')->get());
         $userId = $request->user()->id;
         if(!$this->isAllowedInfoType($infoType)){
-            $this->error('The info type is not supported: '.$infoType.'.');
+            return $this->error('The info type is not supported: '.$infoType.'.');
         }else{
             $infoTypeList = Info::where(['user_id'=>$userId,
-                                         'type'=>$infoType])->get();
+                                         'type'=>$infoType])
+                                         ->with('source')->get();
             return $this->success(['info'=>$infoTypeList]);
         }
     }
@@ -69,8 +81,11 @@ class InfoController extends Controller
         }else{
             $infoType = Info::where(['user_id'=>$userId,
                                          'type'=>$infoType,
-                                         'id'=>$infoTypeId])->get();
-            return $infoType==null?$this->error('The user did not own this '.$infoType.'.'):$this->success(['info'=>$infoType]);
+                                         'id'=>$infoTypeId])
+                                         ->with('source')
+                                         ->get();
+            return $infoType==null?$this->error('The user did not own this '.$infoType.'.'):
+                    $this->success(['info'=>$infoType]);
         }
     }
 
@@ -79,7 +94,7 @@ class InfoController extends Controller
         $allowedInfoTypes = $info->getAllowedInfoType();
         $userId = $request->user()->id;
         if(!in_array($infoType, $allowedInfoTypes)){
-            $this->error('The info type is not supported: '.$infoType);
+            return $this->error('The info type is not supported: '.$infoType);
         }else{
             $info = Info::updateOrCreate([
                 'user_id' => $userId,
@@ -89,6 +104,15 @@ class InfoController extends Controller
                 'description'=>$request->description,
                 'references'=>$request->references,
             ]);
+            if(isset($request['source_ids'])){
+                // $data,$infoType,$infoTypeId,$origin,$originId
+                $this->infoEntryController->addOriginToInfoType($request,
+                                                                $infoType,
+                                                                $info->id,
+                                                                "source",
+                                                                $request['source_ids']);
+            }
+            
             return $this->success([
                 'info' => $info
             ]);

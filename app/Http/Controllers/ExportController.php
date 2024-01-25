@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
 class ExportController extends Controller
 {
 
-    protected $allowedType = ['category','source','tag','feed'];
+    protected $allowedType = ['category','source','tag','feed','folder'];
     protected $feedController = null;
     protected $userFeedController = null;
     protected $fileController = null;
@@ -130,9 +130,9 @@ class ExportController extends Controller
         $html = str_replace(['_lt_', '_gt_', '_amp_', '_quot_'], ['&lt;', '&gt;', '&amp;', '&quot;'], $html);
     }
 
-    public function getFeedsFromCategory(Request $request,$categoryId)
+    public function getFeedsFromFolder(Request $request,$folderId)
     {
-        return $this->userFeedController->getUserFeedsWithCategory($request,$categoryId); 
+        return $this->userFeedController->getUserFeedsWithFolder($request,$folderId); 
     }
 
     public function getFeedsFromSource($sourceId)

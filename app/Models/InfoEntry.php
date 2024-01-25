@@ -14,12 +14,12 @@ class InfoEntry extends Base
 {
     use HasFactory;
 
-    protected $allowedInfoType = ['category', 'tag','list','note'];
+    protected $allowedInfoType = ['folder','category','tag','list','note'];
     protected $allowedOrigin = ['feed','source'];
 
     protected $fillable = [
         'user_id',
-        'type', //['category', 'tag','list','note']
+        'type', //['folder', 'tag','list','note']
         'type_id',
         'origin', //['feed','source']
         'origin_id',
