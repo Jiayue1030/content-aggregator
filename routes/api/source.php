@@ -68,7 +68,7 @@ Route::middleware(['auth:user'])->group(function(){
     Route::put('info/category/update/{infoTypeId}', [InfoController::class, 'updateCategory']);
     Route::post('info/category/delete/{infoTypeId}', [InfoController::class, 'deleteCategory']);
 
-    Route::post('info/source/category/{userSourceId}/{userCategoryId}', [InfoEntryController::class, 'addSourceToCategory']);
+    Route::post('info/source/category', [InfoEntryController::class, 'addSourceToCategory']);
     Route::post('info/source/tag/{userSourceId}/{userTagId}', [InfoEntryController::class, 'addSourceToTag']);
     Route::post('info/feed/category/{userFeedId}/{userTagId}', [InfoEntryController::class, 'addFeedToCategory']);
     Route::post('info/feed/tag/{userFeedId}/{userTagId}', [InfoEntryController::class, 'addFeedToTag']);

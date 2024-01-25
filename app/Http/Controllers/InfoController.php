@@ -10,6 +10,11 @@ use App\Http\Requests\InfoType\UpdateInfoTypeRequest;
 class InfoController extends Controller
 {
     // protected $contentType = ['category', 'tag','list','note'];
+    protected $infoEntryController = null;
+
+    public function __construct() {
+        $this->infoEntryController = new InfoEntryController();
+    }
 
     public function getCategoryList(Request $request){
         return $this->getInfoTypeList($request,'category');
@@ -89,6 +94,14 @@ class InfoController extends Controller
                 'description'=>$request->description,
                 'references'=>$request->references,
             ]);
+            if(isset($request['source_ids'])){
+                // $data,$infoType,$infoTypeId,$origin,$originId
+                $this->infoEntryController->addOriginToInfoType($request,
+                                                                $infoType,
+                                                                $info->id,
+                                                                "source",$request['source_ids']);
+            }
+            
             return $this->success([
                 'info' => $info
             ]);

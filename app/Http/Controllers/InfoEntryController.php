@@ -14,8 +14,18 @@ use App\Http\Requests\InfoType\DeleteInfoTypeRequest;
 
 class InfoEntryController extends Controller
 {
-    public function addSourceToCategory(AddInfoEntryRequest $request,$userSourceId,$userCategoryId){
-        return $this->addOriginToInfoType($request,'category',$userCategoryId,'source',$userSourceId);
+    public function addSourceToCategory(AddInfoEntryRequest $request){
+        if(isset($request['source_id'])){
+            if(isset($request['category_id'])){
+                $userCategoryId = $request['category_id'];
+                $userSourceId = $request['source_id'];
+                return $this->addOriginToInfoType($request,'category',$userCategoryId,'source',$userSourceId);
+            }else{
+                return $this->error('At least one category is needed.');
+            }
+        }else{
+            return $this->error('At least one source is needed.');
+        }
     }
 
     public function addSourceToTag(AddInfoEntryRequest $request,$userSourceId,$userTagId){
@@ -103,36 +113,42 @@ class InfoEntryController extends Controller
     }
 
     //Add a source(origin) into category(infoType) as InfoEntry
-    private function addOriginToInfoType($data,$infoType,$infoTypeId,$origin,$originId)
+    // return $this->addOriginToInfoType($request,'category',$userCategoryId,'source',$userSourceId);
+    public function addOriginToInfoType($data,$infoType,$infoTypeId,$origin,$originIds)
     {
         $isAllowedOrigin = $this->isAllowedOrigin($origin);
         $userId = $data->user()->id;
+        // dd($data->all());
         if($isAllowedOrigin){
-            $isUserHasOrigin = $this->isUserHasOrigin($userId,$origin,$originId);
-            if($isUserHasOrigin){
-                $isUserHasInfoType = $this->isUserHasInfoType($userId,$infoType,$infoTypeId);
-                if($isUserHasInfoType){
-                    $infoEntry = InfoEntry::updateOrCreate([
-                        'user_id' => $userId,
-                        'origin' => $origin,
-                        'origin_id' => $originId,
-                        'type' => $infoType,
-                        'type_id' => $infoTypeId,
-                    ],[
-                        'title'=> $data->title,
-                        'description'=> $data->description,
-                        'contents' => $data->contents
-                    ]);
-                    return $this->success([
-                        'info_entry' => $infoEntry,
-                        'message' => 'The '.$origin.' is added to '.$infoType.'.'
-                    ]);
-                }else{
-                    return $this->error('This user did not own this '.$infoType.'.');
+            foreach($originIds as $originId){
+                // echo($originId);
+                $isUserHasOrigin = $this->isUserHasOrigin($userId,$origin,$originId);
+                if($isUserHasOrigin){
+                    $isUserHasInfoType = $this->isUserHasInfoType($userId,$infoType,$infoTypeId);
+                    if($isUserHasInfoType){
+                        $infoEntry = InfoEntry::updateOrCreate([
+                            'user_id' => $userId,
+                            'origin' => $origin,
+                            'origin_id' => $originId,
+                            'type' => $infoType,
+                            'type_id' => $infoTypeId,
+                        ],[
+                            'title'=> $data->title,
+                            'description'=> $data->description,
+                            'contents' => $data->contents
+                        ]);
+                        // return $this->success([
+                        //     'info_entry' => $infoEntry,
+                        //     'message' => 'The '.$origin.' is added to '.$infoType.'.'
+                        // ]);
+                    }else{
+                        return $this->error('This user did not own this '.$infoType.'.');
+                    }
                 }
-            }else{
-                return $this->error('This user did not own this '.$origin.'.');
             }
+            // else{
+            //     return $this->error('This user did not own this '.$origin.'.');
+            // }
         }else{
             return $this->error('The origin is not allowed:'.$origin.'.');
         }
