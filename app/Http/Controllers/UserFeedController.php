@@ -12,15 +12,15 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UserFeedController extends Controller
 {
-    public function getUserFeedsWithCategory(Request $request,$categoryId,$infoType='category'){
+    public function getUserFeedsWithFolder(Request $request,$folderId,$infoType='folder'){
         $userId = $request->user()->id;
         // $userFeeds = DB::table('user_feeds')
         //              ->join('feeds','user_feeds.feed_id','=','feeds.id')
-        //              ->join('info_entries','info_entries.type_id','=',$categoryId)
+        //              ->join('info_entries','info_entries.type_id','=',$folderId)
         //              ->join('info','info.')
         //              ->where('user_feeds.user_id','=',$request->user()->id)
-        //              ->where('info.type','=','category')
-        //              ->where('info.id','=',$categoryId)
+        //              ->where('info.type','=','folder')
+        //              ->where('info.id','=',$folderId)
         //              ->select('feeds.*','info.*')
         //              ->get()
         // return $userFeeds;

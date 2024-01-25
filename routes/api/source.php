@@ -45,7 +45,7 @@ Route::middleware(['auth:user'])->group(function(){
     Route::post('/read/rss2',[CrawlerController::class,'readRssItemsTest']);
 
     /**
-     * User Contents Management: Category,Tag,Note,List,Folder
+     * User Contents Management: Folder,Tag,Note,List,Folder
      */
     Route::get('info/tags', [InfoController::class, 'getTagList']);
     Route::get('info/tag/get/{infoTypeId}', [InfoController::class, 'getTagDetail']);
@@ -54,30 +54,30 @@ Route::middleware(['auth:user'])->group(function(){
     //Example: 'feed/get/1' 'source/get/1'
     Route::get('{origin}/get/{originId}',[InfoEntryController::class,'getOriginDetails']);
 
-    //From an info type(category,tag), get the list of origins(sources,feeds)
-    //Example: feed/category/get/1 feed/tag/get/1 source/category/get/1 source/tag/get/1
-    Route::get('{origin}/{infoType}/get/{infoTypeId}',[InfoEntryController::class,'getOriginFromInfoType']);
+    //From an info type(folder,tag), get the list of origins(sources,feeds)
+    //Example: feed/folder/get/1 feed/tag/get/1 source/folder/get/1 source/tag/get/1
+    // Route::get('{origin}/{infoType}/get/{infoTypeId}',[InfoEntryController::class,'getOriginFromInfoType']);
     
     Route::post('info/tag/add', [InfoController::class, 'addTag']);
     Route::put('info/tag/update/{infoTypeId}', [InfoController::class, 'updateTag']);
     Route::post('info/tag/delete/{infoTypeId}', [InfoController::class, 'deleteTag']);
 
-    Route::get('info/categories', [InfoController::class, 'getCategoryList']);
-    Route::get('info/category/get/{infoTypeId}', [InfoController::class, 'getCategoryDetail']);
-    Route::post('info/category/add', [InfoController::class, 'addCategory']);
-    Route::put('info/category/update/{infoTypeId}', [InfoController::class, 'updateCategory']);
-    Route::post('info/category/delete/{infoTypeId}', [InfoController::class, 'deleteCategory']);
+    Route::get('info/folders', [InfoController::class, 'getFolderList']);
+    Route::get('info/folder/get/{infoTypeId}', [InfoController::class, 'getFolderDetail']);
+    Route::post('info/folder/add', [InfoController::class, 'addFolder']);
+    Route::put('info/folder/update/{infoTypeId}', [InfoController::class, 'updateFolder']);
+    Route::post('info/folder/delete/{infoTypeId}', [InfoController::class, 'deleteFolder']);
 
-    Route::post('info/source/category', [InfoEntryController::class, 'addSourceToCategory']);
+    Route::post('info/source/folder', [InfoEntryController::class, 'addSourceToFolder']);
     Route::post('info/source/tag/{userSourceId}/{userTagId}', [InfoEntryController::class, 'addSourceToTag']);
-    Route::post('info/feed/category/{userFeedId}/{userTagId}', [InfoEntryController::class, 'addFeedToCategory']);
+    Route::post('info/feed/folder/{userFeedId}/{userTagId}', [InfoEntryController::class, 'addFeedToFolder']);
     Route::post('info/feed/tag/{userFeedId}/{userTagId}', [InfoEntryController::class, 'addFeedToTag']);
 
-    Route::get('info/feed/category/get/{userCategoryId}',[UserFeedController::class,'getUserFeedsWithCategory']);
+    Route::get('info/feed/folder/get/{userFolderId}',[UserFeedController::class,'getUserFeedsWithFolder']);
     
     Route::get('getOriginFromInfoType/{origin}/{infoTypeId}',[InfoEntryController::class,'getOriginFromInfoType']);
 
-    //Example: info/source/category/1 (Get all sources from category with id=1)
+    //Example: info/source/folder/1 (Get all sources from folder with id=1)
     Route::get('info/{origin}/{infoType}/{infoId}',[
         InfoController::class,
         'getInfoEntryFromInfoType']); 
@@ -88,7 +88,7 @@ Route::middleware(['auth:user'])->group(function(){
     // Route::get('/export/feeds/{userSourceId}', [ExportController::class,'exportFeedsContentFromSource']);
     Route::post('/export/feeds', [ExportController::class,'exportFeedsContentFromSource2']);
     
-    Route::get('/get/feeds/with_category',[UserFeedController::class,'getUserFeedsWithCategory']);
+    Route::get('/get/feeds/with_folder',[UserFeedController::class,'getUserFeedsWithFolder']);
 
     
     /**

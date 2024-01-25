@@ -28,7 +28,7 @@ class UserFeed extends Base
     public function categories(){
         return $this->hasMany(InfoEntry::class,'origin_id','source_id')
                 ->with('info')
-                ->where('origin','source')->where('type','category');
+                ->where('origin','source')->where('type','folder');
     }
 
     public function tags(){

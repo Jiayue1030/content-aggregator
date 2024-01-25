@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\InfoEntry;
 use App\Models\UserSource;
+use Illuminate\Support\Facades\DB;
 
 class Info extends Model
 {
     use HasApiTokens,SoftDeletes,HasFactory;
 
-    protected $allowedInfoType = ['category', 'tag'];
+    protected $allowedInfoType = ['folder', 'tag','category'];
 
     protected $fillable = ['user_id',
                             'type',
@@ -30,7 +31,8 @@ class Info extends Model
     }
 
     public function source(){
-        return $this->hasMany(InfoEntry::class,'type_id','id')
+        // return $this->hasMany(InfoEntry::class,'type_id','id');
+        return $this->hasManyThrough(Source::class,InfoEntry::class,'type_id','id','id','origin_id')
         ->where('origin','source');
     }
 
@@ -38,6 +40,8 @@ class Info extends Model
         return $this->hasMany(InfoEntry::class,'type_id','id')
         ->where('origin','feed');
     }
+
+
 
     
 }
