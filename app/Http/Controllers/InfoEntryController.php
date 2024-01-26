@@ -178,7 +178,8 @@ class InfoEntryController extends Controller
                 $userFeed = UserFeed::where(['id'=>$originId,'user_id'=>$userId])->first();
                 $hasOrigin = $userFeed==null?false:true;
             }elseif($origin == 'source'){
-                $userSource = UserSource::where(['id'=>$originId,'user_id'=>$userId])->first();
+                $userSource = UserSource::where(['source_id'=>$originId,'user_id'=>$userId])->first();
+                // $userSource = UserSource::where(['id'=>$originId,'user_id'=>$userId])->first();
                 $hasOrigin = $userSource==null?false:true;
             }else{
                 return $hasOrigin;
