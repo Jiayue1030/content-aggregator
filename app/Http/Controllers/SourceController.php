@@ -103,11 +103,17 @@ class SourceController extends Controller
         //     'user_id' => $request->user()->id,
         // ])->get();
 
-        $sources = UserSource::with('source')
-        ->with('feeds')
-        ->with('categories')->with('tags')
-        ->where('user_id', $request->user()->id)
-        ->get();
+        // $sources = UserSource::with('source')
+        // ->with('feeds')
+        // ->with('categories')->with('tags')
+        // ->where('user_id', $request->user()->id)
+        // ->get('sources.source');
+        $userSourceIds = UserSource::where('user_id',$request->user()->id)
+                        ->get('source_id');
+        // var_dump($userSourceIds);
+        $sources = Source::with('feeds')
+                    //->with('categories')->with('tags')
+                    ->whereIn('id',$userSourceIds)->get();
 
         // Extract only the 'sources' data from the result
         // $sources = $userSources->pluck('sources','id','created_at');

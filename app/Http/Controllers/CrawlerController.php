@@ -132,9 +132,7 @@ class CrawlerController extends Controller
         }
     }
 
-    public function readRssItemsTest(Request $request){
-        $this->readRssItems2($request->url);
-    }
+    
 
     //Return the RSS feeds information
     public function readRssItems($rssUrl){
@@ -162,7 +160,12 @@ class CrawlerController extends Controller
         }
         return $rssItemsData;
         //TODO: last check point?
+    }
 
+    
+
+    public function readRssItemsTest(Request $request){
+        $this->readRssItems2($request->url);
     }
 
     //Use SimplePie function to loop through feeds in the rss source
