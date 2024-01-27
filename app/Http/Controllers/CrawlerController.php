@@ -14,6 +14,7 @@ use GuzzleHttp\Exception\ClientException;
 use SimplePie\Author;
 use \DOMDocument;
 use DOMXPath;
+use SimplePie;
 
 class CrawlerController extends Controller
 {
@@ -105,39 +106,42 @@ class CrawlerController extends Controller
 
     //Return the RSS source information
     public function readRss($rssUrl){
-        // $rssUrl = $request->url;
-        $f = FeedReader::read($rssUrl);
-        //parse these data into what SouceModel needed
-        // dd($f->data == null);
-        if($f->data!=null){
+        $feed = new SimplePie\SimplePie($rssUrl,$_SERVER['DOCUMENT_ROOT'].'\\cache');
+        $feed->set_feed_url($rssUrl);
+        // $feed->set_cache_location($_SERVER['DOCUMENT_ROOT'] . '\\app\\cache_files');
+        $feed->init();
+        $feed->handle_content_type();
+        
+        if($feed->data!=null){
             $rssSourceData = [
-                'title' => $f->get_title(),
+                'title' => $feed->get_title(),
                 'url'   => $rssUrl, //url source from user
-                'rss_url'   => $f->subscribe_url(), //real rss subscribe url
-                'description' => $f->get_description(),
-                'type'  => $f->get_type(),
+                'rss_url'   => $feed->subscribe_url(), //real rss subscribe url
+                'description' => $feed->get_description(),
+                'type'  => $feed->get_type(),
                 'is_rss' => true,
-                'language' => $f->get_language(),
-                'metadata' => ['copyright'  => $f->get_copyright(),
-                                'image_url' => $f->get_image_url()],
-                'author' => $f->get_authors(),
-                'link'  => $f->get_link(), //Public website from the rss source
+                'language' => $feed->get_language(),
+                'metadata' => ['copyright'  => $feed->get_copyright(),
+                                'image_url' => $feed->get_image_url()],
+                'author' => $feed->get_authors(),
+                'link'  => $feed->get_link(), //Public website from the rss source
             ];
             return response()->json($rssSourceData);
         }else{
             return null; //TODO:This link not support rss (you should call above methods and get that)
         }
-        
     }
 
     public function readRssItemsTest(Request $request){
-        $this->readRssItems($request->url);
+        $this->readRssItems2($request->url);
     }
 
     //Return the RSS feeds information
     public function readRssItems($rssUrl){
-        $f = FeedReader::read($rssUrl);
-        $rssItems = $f->get_items();
+        $feed = FeedReader::read($rssUrl);
+        $feed->force_feed(true);
+        // dd($f); //https://www.mdpi.com/journal/sustainability
+        $rssItems = $feed->get_items();
         $rssItemsData = [];
         foreach ($rssItems as $rssItem) {
             $itemData = [
@@ -154,21 +158,40 @@ class CrawlerController extends Controller
                 'pubdate' => $rssItem->get_date('Y-m-d H:i:s'),
             ];
         
-            //Check if 'description' is equal to 'content' for the current $rssItem
-            // if ($itemData['description'] == $itemData['content']) {
-            //     // echo('same');
-            //     $linkContent = $this->getContentFromLink($itemData['link']);
-            //     $itemData['content'] = $linkContent;
-            // }else{
-            //     echo($itemData['content']);
-            //     // echo('想死啊');
-            // }
-        
             $rssItemsData[] = $itemData;
         }
         return $rssItemsData;
         //TODO: last check point?
 
+    }
+
+    //Use SimplePie function to loop through feeds in the rss source
+    public function readRssItems2($rssUrl){
+        $feed = new SimplePie\SimplePie($rssUrl,$_SERVER['DOCUMENT_ROOT'].'\\cache');
+        $feed->set_feed_url($rssUrl);
+        // $feed->set_cache_location($_SERVER['DOCUMENT_ROOT'] . '\\app\\cache_files');
+        $feed->init();
+        $feed->handle_content_type();
+        $rssItems = $feed->get_items();
+        $rssItemsData = [];
+        foreach ($rssItems as $rssItem) {
+            // dd($rssItem->get_content());
+            $itemData = [
+                'title' => $rssItem->get_title(),
+                'description' => $rssItem->get_description(),
+                // 'content' => $rssItem->get_item_tags($rssItem->get_link(),'content')!=null?
+                //                 $rssItem->get_content():
+                //                 $this->getContentFromLink($rssItem->get_link()),
+                'content'=>$rssItem->get_content(),
+                'link' => $rssItem->get_link(),
+                'guid' => $rssItem->get_id(),
+                'authors' => $rssItem->get_authors(),
+                'categories' => $rssItem->get_categories(),
+                'pubdate' => $rssItem->get_date('Y-m-d H:i:s'),
+            ];
+            $rssItemsData[] = $itemData;
+        }
+        return $rssItemsData;
     }
 
     public function getContentFromLinkTest(Request $request){
