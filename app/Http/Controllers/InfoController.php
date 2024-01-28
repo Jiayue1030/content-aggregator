@@ -83,7 +83,7 @@ class InfoController extends Controller
                                          'type'=>$infoType,
                                          'id'=>$infoTypeId])
                                          ->with('source')
-                                         ->get();
+                                         ->get()->first();
             return $infoType==null?$this->error('The user did not own this '.$infoType.'.'):
                     $this->success(['info'=>$infoType]);
         }

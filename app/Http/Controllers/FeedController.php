@@ -52,23 +52,33 @@ class FeedController extends Controller
     }
 
     public function getUserFeedsList(Request $request){
-        $userSourceId = isset($request->user_source_id)?$request->user_source_id:null;
-        $sourceId = null;
+        // dd($request->user());
+        $sourceId = isset($request->source_id)?$request->source_id:null;
+        $userFeedsList = [];
+        if($sourceId!=null){
+            $userSource = UserSource::where('source_id',$sourceId)->first();
+            $source = Source::where('id',$sourceId)->first();
+            if($source){
+                $userFeedIds = UserFeed::where('user_id',$request->user()->id)
+                        ->where('source_id',$sourceId)
+                        ->get('feed_id');
+                $userFeedsList = Feed::whereIn('id',$userFeedIds)->get();
 
-        if($userSourceId!=null){
-            $userSource = UserSource::where('id',$userSourceId)
-                            ->where('user_id',$request->user()->id)->first();
-            $sourceId = $userSource!=null?$userSource->source_id:$userSource;
-            if($sourceId==null){
-                return $this->error('Source not exist');
+                if($source==null){
+                    return $this->error('Source not exist');
+                }
+            }else{
+                return $this->error('User did not own this source');
             }
+        }else{
+            $userSourceIds = UserSource::where('user_id',$request->user()->id)->get('source_id');
+            $sourceIds = Source::whereIn('id',$userSourceIds)->get('id');
+
+            $userFeedIds = UserFeed::where('user_id',$request->user()->id)
+                        ->whereIn('source_id',$sourceIds)
+                        ->get('feed_id');
+            $userFeedsList = Feed::whereIn('id',$userFeedIds)->get();
         }
-    
-        $userFeeds = UserFeed::with('feed')
-        ->with('source')
-        ->where('user_id', $request->user()->id)
-        ->get();
-        $userFeedsList = $sourceId!=null?$userFeeds->where('source_id',$sourceId):$userFeeds;
         return $this->success(['feeds'=>$userFeedsList]);
     }
 
