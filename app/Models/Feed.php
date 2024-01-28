@@ -25,4 +25,8 @@ class Feed extends Base
         'source_id'
         // 'contents'
     ];
+
+    public function source(){
+        return $this->hasOne(Source::class,'id','source_id');
+    }
 }

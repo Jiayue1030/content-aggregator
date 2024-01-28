@@ -62,7 +62,7 @@ class FeedController extends Controller
                 $userFeedIds = UserFeed::where('user_id',$request->user()->id)
                         ->where('source_id',$sourceId)
                         ->get('feed_id');
-                $userFeedsList = Feed::whereIn('id',$userFeedIds)->get();
+                $userFeedsList = Feed::whereIn('id',$userFeedIds)->with('source')->get();
 
                 if($source==null){
                     return $this->error('Source not exist');
@@ -77,7 +77,7 @@ class FeedController extends Controller
             $userFeedIds = UserFeed::where('user_id',$request->user()->id)
                         ->whereIn('source_id',$sourceIds)
                         ->get('feed_id');
-            $userFeedsList = Feed::whereIn('id',$userFeedIds)->get();
+            $userFeedsList = Feed::whereIn('id',$userFeedIds)->with('source')->get();
         }
         return $this->success(['feeds'=>$userFeedsList]);
     }
