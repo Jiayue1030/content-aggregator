@@ -7,12 +7,14 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\Shared\Html;
 use PhpOffice\PhpWord\IOFactory;
 use App\Http\Controllers\FeedController;
+use App\Models\Feed;
 use App\Models\UserSource;
 use App\Models\Source;
 use Carbon\Carbon;
 use DOMDocument;
 use DOMXPath;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Redirect;
 
 class ExportController extends Controller
 {
@@ -70,6 +72,27 @@ class ExportController extends Controller
         }
     }
 
+    public function exportFeedsContentFromSource3(Request $request)
+    {
+        // dd($request->all());
+        if(!isset($request->feed_ids)){
+            return $this->error('Need at least one feed to export.');
+        }
+        $userFeedIds = isset($request->feed_ids)?$request->feed_ids:0;
+
+        $userId = $request->user()->id;
+        $feedsContentFromSources = [];
+        // dd();
+        $feeds = Feed::whereIn('id',$userFeedIds)->get();
+        if ($feeds) {
+            // dd($feeds);
+            return $this->exportToWord2($userId,$feeds);
+            // $feedsContentFromSources[] = $feedsContentFromSource;
+        } else {
+            return $this->error('Error encounter when exporting');
+        }
+    }
+
 
     public function exportToWord($userId,$contents)
     {
@@ -118,7 +141,7 @@ class ExportController extends Controller
         
         header("Content-Disposition: attachment; filename='.$filename.'\''.");
         $objWriter->save($filename);
-        $response =  $this->fileController->downloadFile($filename);
+        $this->fileController->downloadFile($filename);
         return response()->download($response['url']);
     }
 
