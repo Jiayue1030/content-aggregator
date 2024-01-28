@@ -86,7 +86,7 @@ Route::middleware(['auth:user'])->group(function(){
     Route::get('info/{originType}/get/{originId}',[InfoEntryController::class,'getInfoTypesFromOrigin']);
     
     // Route::get('/export/feeds/{userSourceId}', [ExportController::class,'exportFeedsContentFromSource']);
-    Route::post('/export/feeds', [ExportController::class,'exportFeedsContentFromSource2']);
+    Route::post('/export/feeds', [ExportController::class,'exportFeedsContentFromSource3']);
     
     Route::get('/get/feeds/with_folder',[UserFeedController::class,'getUserFeedsWithFolder']);
 
@@ -100,5 +100,4 @@ Route::middleware(['auth:user'])->group(function(){
      Route::get('test/jobs',[UpdateFeedsJob::class,'handle']);
 
      Route::post('test/getContentFromLink',[CrawlerController::class,'getContentFromLinkTest']);
-
 });
