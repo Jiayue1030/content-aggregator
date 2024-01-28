@@ -171,7 +171,7 @@ class CrawlerController extends Controller
 
     //Use SimplePie function to loop through feeds in the rss source
     public function readRssItems2($rssUrl){
-        $feed = new SimplePie\SimplePie($rssUrl,$_SERVER['DOCUMENT_ROOT'].'\\cache');
+        $feed = new SimplePie\SimplePie($rssUrl,$_SERVER['DOCUMENT_ROOT'].'/cache');
         $feed->set_feed_url($rssUrl);
         // $feed->set_cache_location($_SERVER['DOCUMENT_ROOT'] . '\\app\\cache_files');
         $feed->init();
