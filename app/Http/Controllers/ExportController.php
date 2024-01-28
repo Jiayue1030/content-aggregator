@@ -122,6 +122,53 @@ class ExportController extends Controller
         return response()->download($response['url']);
     }
 
+    public function exportToWord2($userId,$contents)
+    {
+        $phpWord = new PhpWord();
+        $itemSection = $phpWord->addSection();
+        if($contents==null){
+            return $this->error('No feeds able to export');
+        }
+        // dd($contents[0]['title']);
+        foreach ($contents as $item) {
+            $itemSection->addText('Title:'.$item['title'],array('bold' => true));
+            $itemSection->addText('Description:',array('bold' => true));
+            $description = preg_replace('/^\s*[\r\n]+/m', '',strip_tags($item['description']));
+            $itemSection->addText($description);
+            $itemSection->addText('Content:',array('bold' => true));
+            libxml_use_internal_errors(true); 
+            $doc = new DOMDocument();
+            $doc->loadHTML(strip_tags($item['content'],'<body><div><p><h1><h2><h3><h4><h5><h6><p>'));
+            \PhpOffice\PhpWord\Shared\Html::addHtml($itemSection,$doc->saveHTML(),true,false);
+            
+            $itemSection->addText('Link:',array('bold' => true));
+            $itemSection->addLink($item['link']);
+            $itemSection->addText('Publication Date:'.$item['pubdate'],array('bold' => true));
+            $itemSection->addText(''); // Add a blank line between feeds
+            $itemSection->addText('---------------------------------------------------------------------------------------------------------------------------------------'); // Add a blank line between feeds
+
+            // dd($itemSection);
+        }
+
+        $datetime = now()->format('Y-m-d_H-i-s');
+
+        // $filename = 'exported_feeds_'.$datetime.'-'.str_replace(' ', '_',$contents['title']).'_user_id_'.$userId.'.docx';
+        $filename = 'exported_feeds_'.$datetime.'_user_id_'.$userId.'.docx';
+
+        $objWriter = IOFactory::createWriter($phpWord, 'Word2007', $download = true);
+        
+        header("Content-Disposition: attachment; filename='.$filename.'\''.");
+        $objWriter->save($filename);
+        $response =  $this->fileController->downloadFile($filename);
+        // dd($response['localpath']);
+        return response()->download($response['localpath']);
+        // return Redirect::to($response['url']);
+    }
+
+    public function testGetFile($localpath){
+        return response()->download($localpath);
+    }
+
     public function parseContents($html){
         $html = str_replace(["\n", "\r"], '', $html);
         $html = str_replace(['&lt;', '&gt;', '&amp;', '&quot;'], ['_lt_', '_gt_', '_amp_', '_quot_'], $html);

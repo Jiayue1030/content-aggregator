@@ -108,6 +108,7 @@ class CrawlerController extends Controller
     public function readRss($rssUrl){
         $feed = new SimplePie\SimplePie($rssUrl,$_SERVER['DOCUMENT_ROOT'].'\\cache');
         $feed->set_feed_url($rssUrl);
+        $feed->enable_cache(false);
         // $feed->set_cache_location($_SERVER['DOCUMENT_ROOT'] . '\\app\\cache_files');
         $feed->init();
         $feed->handle_content_type();
