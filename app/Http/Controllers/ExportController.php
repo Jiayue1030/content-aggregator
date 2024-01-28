@@ -141,7 +141,7 @@ class ExportController extends Controller
         
         header("Content-Disposition: attachment; filename='.$filename.'\''.");
         $objWriter->save($filename);
-        $this->fileController->downloadFile($filename);
+        $response = $this->fileController->downloadFile($filename);
         return response()->download($response['url']);
     }
 
