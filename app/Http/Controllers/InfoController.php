@@ -136,6 +136,14 @@ class InfoController extends Controller
                 'description'=>$request->description,
                 'references'=>$request->references,
             ]);
+            if(isset($request['source_ids'])){
+                // $data,$infoType,$infoTypeId,$origin,$originId
+                $this->infoEntryController->addOriginToInfoType($request,
+                                                                $infoType,
+                                                                $info->id,
+                                                                "source",
+                                                                $request['source_ids']);
+            }
             return $this->success([
                 'info' => $info
             ]);
