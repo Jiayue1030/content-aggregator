@@ -86,7 +86,7 @@ class ExportController extends Controller
         $feeds = Feed::whereIn('id',$userFeedIds)->get();
         if ($feeds) {
             // dd($feeds);
-            return $this->exportToWord2($userId,$feeds);
+            $this->exportToWord2($userId,$feeds);
             // $feedsContentFromSources[] = $feedsContentFromSource;
         } else {
             return $this->error('Error encounter when exporting');
