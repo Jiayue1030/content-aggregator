@@ -86,7 +86,8 @@ class ExportController extends Controller
         $feeds = Feed::whereIn('id',$userFeedIds)->get();
         if ($feeds) {
             // dd($feeds);
-            $this->exportToWord2($userId,$feeds);
+            // $this->exportToWord2($userId,$feeds);
+            $this->exportToWordByPython($userId,$feeds);
             // $feedsContentFromSources[] = $feedsContentFromSource;
         } else {
             return $this->error('Error encounter when exporting');
@@ -186,6 +187,34 @@ class ExportController extends Controller
         // dd($response['localpath']);
         return response()->download($response['localpath']);
         // return Redirect::to($response['url']);
+    }
+
+    public function exportToWordByPython($userId,$contents)
+    {
+        $datetime = now()->format('Y-m-d_H-i-s');
+        $filename = 'exported_feeds_'.$datetime.'_user_id_'.$userId.'.docx';
+
+        if($contents==null){
+            return $this->error('No feeds able to export');
+        }
+        $htmlContents = [];
+        foreach ($contents as $item) {
+            $html = '<p><strong>Title:</strong> ' . htmlspecialchars($item['title']) . '</p>';
+            $html .= '<p><strong>Description:</strong> ' . htmlspecialchars($item['description']) . '</p>';
+            $html.= $item['content'];
+            $html .= '<p><strong>Link:</strong> <a href="' . htmlspecialchars($item['link']) . '">Link</a></p>';
+            $html .= '<p><strong>Publication Date:</strong> ' . htmlspecialchars($item['pubdate']) . '</p>';
+            $html .= '<br></br>';
+            $htmlContents[] = $html;
+        }
+        // $htmlContentsString = implode(' ', array_map('escapeshellarg', $htmlContents));
+        // Assuming $htmlContents is an array of HTML contents
+        $htmlContentsString = implode('', $htmlContents);
+        // $filename = 'hello.docx';
+        // dd($htmlContentsString);
+        exec("python app\Scripts\export_to_words.py $htmlContentsString", $output, $returnCode);
+        // dd($output,$returnCode);
+
     }
 
     public function testGetFile($localpath){
