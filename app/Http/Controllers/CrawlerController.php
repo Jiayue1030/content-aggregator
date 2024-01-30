@@ -48,13 +48,16 @@ class CrawlerController extends Controller
 
     private function fetchWebsiteContents($url){
         $client = new GuzzleClient();
-        // $client->get($url)->getBody()->getContents();
+        
         try {
             $response = $client->get($url);
+            echo('okok');
+            dd($response);
         } catch (ClientException $e) {
             $response = $e->getResponse();
             // $responseBodyAsString = $response->getBody()->getContents();
         }
+        dd($response->getBody());
         return $response;
     }
 
@@ -203,8 +206,8 @@ class CrawlerController extends Controller
     }
 
     public function getContentFromLink($link){
-        // $link = $request->link;
-        $websiteContent = $this->fetchWebsiteContents($link)->getBody()->getContents();
+        $websiteContent = $this->fetchWebsiteContents($link)
+                            ->getBody()->getContents();
         $htmlContent = $websiteContent;
         $dom = new DOMDocument();
         libxml_use_internal_errors(true);
