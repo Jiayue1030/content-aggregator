@@ -8,13 +8,11 @@ use PhpOffice\PhpWord\Shared\Html;
 use PhpOffice\PhpWord\IOFactory;
 use App\Http\Controllers\FeedController;
 use App\Models\Feed;
-use App\Models\UserSource;
 use App\Models\Source;
-use Carbon\Carbon;
 use DOMDocument;
 use DOMXPath;
+use robertogallea\LaravelPython\Services\LaravelPython;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Redirect;
 
 class ExportController extends Controller
 {
@@ -65,7 +63,7 @@ class ExportController extends Controller
         if ($userSource) {
             $feedsContentFromSource = Source::where('id', $userSource->id)
                 ->with('feeds')->first();
-            return $this->exportToWord($userId,$feedsContentFromSource);
+            $this->exportToWord2($userId,$feedsContentFromSource);
             // $feedsContentFromSources[] = $feedsContentFromSource;
         } else {
             return $this->error('User did not own this source:' . $userSourceIds);
@@ -74,20 +72,22 @@ class ExportController extends Controller
 
     public function exportFeedsContentFromSource3(Request $request)
     {
-        // dd($request->all());
+        var_dump($request->all());
         if(!isset($request->feed_ids)){
             return $this->error('Need at least one feed to export.');
         }
+        $feedIdsString = $request->query('feed_ids');
         $userFeedIds = isset($request->feed_ids)?$request->feed_ids:0;
 
+        $feedIdsArray = json_decode($feedIdsString, true);
         $userId = $request->user()->id;
         $feedsContentFromSources = [];
         // dd();
-        $feeds = Feed::whereIn('id',$userFeedIds)->get();
+        $feeds = Feed::whereIn('id',$feedIdsArray)->get();
         if ($feeds) {
             // dd($feeds);
             // $this->exportToWord2($userId,$feeds);
-            $this->exportToWordByPython($userId,$feeds);
+            $this->exportToWord2($userId,$feeds);
             // $feedsContentFromSources[] = $feedsContentFromSource;
         } else {
             return $this->error('Error encounter when exporting');
@@ -106,25 +106,16 @@ class ExportController extends Controller
         $itemSection->addLink('RSS Url: '.$contents['rss_url']);
         $itemSection->addText('Website Description: '.$contents['description']);
         $itemSection->addText(''); // Add a blank line between feeds
-        // $sourceMetaData = $titleSection->addText($contents['metadata']);
-        
-        // dd($contents);
         foreach ($contents->feeds as $item) {
-            // $feedContent = $this->feedController->getUserFeed($request,$feed->id);
             $itemSection->addText('Title:'.$item['title'],array('bold' => true));
             $itemSection->addText('Description:',array('bold' => true));
-            // dd(strip_tags($item['description']));
             $description = preg_replace('/^\s*[\r\n]+/m', '',strip_tags($item['description']));
-            // dd($description);
             $itemSection->addText($description);
             $itemSection->addText('Content:',array('bold' => true));
             libxml_use_internal_errors(true); 
             $doc = new DOMDocument();
             $doc->loadHTML(strip_tags($item['content'],'<body><div><p><h1><h2><h3><h4><h5><h6><p>'));
-            // dd($doc->saveHTML());
             \PhpOffice\PhpWord\Shared\Html::addHtml($itemSection,$doc->saveHTML(),true,false);
-            
-            // $itemSection->addText(strip_tags($item['content']));
             $itemSection->addText('Link:',array('bold' => true));
             $itemSection->addLink($item['link']);
             $itemSection->addText('Publication Date:'.$item['pubdate'],array('bold' => true));
@@ -182,11 +173,24 @@ class ExportController extends Controller
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007', $download = true);
         
         header("Content-Disposition: attachment; filename='.$filename.'\''.");
+        
+ 
         $objWriter->save($filename);
         $response =  $this->fileController->downloadFile($filename);
-        // dd($response['localpath']);
-        return response()->download($response['localpath']);
-        // return Redirect::to($response['url']);
+        $filePath = $response['url'];
+        // dd($filePath);// https://content-aggregator-bucket.s3.ap-southeast-2.amazonaws.com/exported_feeds_2024-01-30_15-10-54_user_id_4.docx
+        $headers = [
+            'Content-Type'        => 'application/jpeg',
+            'Content-Disposition' => 'attachment; filename="https://content-aggregator-bucket.s3.ap-southeast-2.amazonaws.com/exported_feeds_2024-01-30_15-10-54_user_id_4.docx"',
+        ];
+        // https://stackoverflow.com/questions/52955643/download-s3-file-links-in-laravel
+        return redirect(Storage::disk('s3')->temporaryUrl(
+            $filePath,
+            now()->hour(),
+            ['ResponseContentDisposition' => 'attachment']
+        ))->header('Content-Type','application/msword')
+        ->header('Content-Disposition','attachment; filename="'. $filePath .'"');
+        // return response()->download($response['url']);
     }
 
     public function exportToWordByPython($userId,$contents)
@@ -207,14 +211,8 @@ class ExportController extends Controller
             $html .= '<br></br>';
             $htmlContents[] = $html;
         }
-        // $htmlContentsString = implode(' ', array_map('escapeshellarg', $htmlContents));
-        // Assuming $htmlContents is an array of HTML contents
         $htmlContentsString = implode('', $htmlContents);
-        // $filename = 'hello.docx';
-        // dd($htmlContentsString);
-        exec("python app\Scripts\export_to_words.py $htmlContentsString", $output, $returnCode);
-        // dd($output,$returnCode);
-
+        shell_exec("python ". "D:\xampp\htdocsexport_to_words.py " . '<h1>pls work laaahhh</h1>');
     }
 
     public function testGetFile($localpath){

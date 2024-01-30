@@ -66,6 +66,17 @@
       0 => 'RoachPHP\\Laravel\\RoachServiceProvider',
     ),
   ),
+  'robertogallea/laravel-python' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'robertogallea\\LaravelPython\\ServiceProvider',
+    ),
+    'aliases' => 
+    array (
+      'Python' => 'robertogallea\\LaravelPython\\Facades\\PythonFacade',
+    ),
+  ),
   'spatie/laravel-ignition' => 
   array (
     'providers' => 
