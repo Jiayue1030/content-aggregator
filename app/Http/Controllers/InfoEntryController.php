@@ -115,11 +115,13 @@ class InfoEntryController extends Controller
     // return $this->addOriginToInfoType($request,'folder',$userFolderId,'source',$userSourceId);
     public function addOriginToInfoType($data,$infoType,$infoTypeId,$origin,$originIds)
     {
+        // dd($originIds);
         $isAllowedOrigin = $this->isAllowedOrigin($origin);
         $userId = $data->user()->id;
         // dd($data->all());
         if($isAllowedOrigin){
             foreach($originIds as $originId){
+                echo($originId);
                 $isUserHasOrigin = $this->isUserHasOrigin($userId,$origin,$originId);
                 if($isUserHasOrigin){
                     $isUserHasInfoType = $this->isUserHasInfoType($userId,$infoType,$infoTypeId);
@@ -144,9 +146,9 @@ class InfoEntryController extends Controller
                     }
                 }
             }
-            // else{
-            //     return $this->error('This user did not own this '.$origin.'.');
-            // }
+            return $this->success([
+                'message' => 'The '.$origin.' is added to '.$infoType.'.'
+            ]);
         }else{
             return $this->error('The origin is not allowed:'.$origin.'.');
         }
