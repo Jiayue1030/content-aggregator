@@ -37,7 +37,7 @@ class FileController extends Controller
             ]);
 
             $url = $s3->getObjectUrl(env('AWS_BUCKET'), $fileName);
-            dd($url,$fileName);
+            // dd($url,$fileName);
             // Return the temporary URL for download
             return $this->success(['url' => $url]);
         } catch (AwsException $e) {

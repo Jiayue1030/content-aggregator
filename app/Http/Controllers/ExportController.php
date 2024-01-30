@@ -72,22 +72,21 @@ class ExportController extends Controller
 
     public function exportFeedsContentFromSource3(Request $request)
     {
-        var_dump($request->all());
+        // dd($request);
         if(!isset($request->feed_ids)){
             return $this->error('Need at least one feed to export.');
         }
-        $feedIdsString = $request->query('feed_ids');
         $userFeedIds = isset($request->feed_ids)?$request->feed_ids:0;
-
-        $feedIdsArray = json_decode($feedIdsString, true);
         $userId = $request->user()->id;
         $feedsContentFromSources = [];
-        // dd();
-        $feeds = Feed::whereIn('id',$feedIdsArray)->get();
+        $feeds = Feed::whereIn('id',$userFeedIds)->get();
         if ($feeds) {
             // dd($feeds);
             // $this->exportToWord2($userId,$feeds);
-            $this->exportToWord2($userId,$feeds);
+            $file = $this->exportToWord2($userId,$feeds);
+            return $this->success(
+                $file
+            );
             // $feedsContentFromSources[] = $feedsContentFromSource;
         } else {
             return $this->error('Error encounter when exporting');
@@ -161,36 +160,16 @@ class ExportController extends Controller
             $itemSection->addText('Publication Date:'.$item['pubdate'],array('bold' => true));
             $itemSection->addText(''); // Add a blank line between feeds
             $itemSection->addText('---------------------------------------------------------------------------------------------------------------------------------------'); // Add a blank line between feeds
-
-            // dd($itemSection);
         }
 
         $datetime = now()->format('Y-m-d_H-i-s');
-
-        // $filename = 'exported_feeds_'.$datetime.'-'.str_replace(' ', '_',$contents['title']).'_user_id_'.$userId.'.docx';
         $filename = 'exported_feeds_'.$datetime.'_user_id_'.$userId.'.docx';
-
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007', $download = true);
         
-        header("Content-Disposition: attachment; filename='.$filename.'\''.");
-        
- 
         $objWriter->save($filename);
         $response =  $this->fileController->downloadFile($filename);
         $filePath = $response['url'];
-        // dd($filePath);// https://content-aggregator-bucket.s3.ap-southeast-2.amazonaws.com/exported_feeds_2024-01-30_15-10-54_user_id_4.docx
-        $headers = [
-            'Content-Type'        => 'application/jpeg',
-            'Content-Disposition' => 'attachment; filename="https://content-aggregator-bucket.s3.ap-southeast-2.amazonaws.com/exported_feeds_2024-01-30_15-10-54_user_id_4.docx"',
-        ];
-        // https://stackoverflow.com/questions/52955643/download-s3-file-links-in-laravel
-        return redirect(Storage::disk('s3')->temporaryUrl(
-            $filePath,
-            now()->hour(),
-            ['ResponseContentDisposition' => 'attachment']
-        ))->header('Content-Type','application/msword')
-        ->header('Content-Disposition','attachment; filename="'. $filePath .'"');
-        // return response()->download($response['url']);
+        return ['url'=>$filePath,'filename'=>$filename];
     }
 
     public function exportToWordByPython($userId,$contents)
