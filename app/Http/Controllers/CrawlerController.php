@@ -51,13 +51,13 @@ class CrawlerController extends Controller
         
         try {
             $response = $client->get($url);
-            echo('okok');
-            dd($response);
+            // echo('okok');
+            // dd($response);
         } catch (ClientException $e) {
             $response = $e->getResponse();
             // $responseBodyAsString = $response->getBody()->getContents();
         }
-        dd($response->getBody());
+        // dd($response->getBody());
         return $response;
     }
 

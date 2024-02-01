@@ -121,7 +121,7 @@ class InfoEntryController extends Controller
         // dd($data->all());
         if($isAllowedOrigin){
             foreach($originIds as $originId){
-                echo($originId);
+                // echo($originId);
                 $isUserHasOrigin = $this->isUserHasOrigin($userId,$origin,$originId);
                 if($isUserHasOrigin){
                     $isUserHasInfoType = $this->isUserHasInfoType($userId,$infoType,$infoTypeId);

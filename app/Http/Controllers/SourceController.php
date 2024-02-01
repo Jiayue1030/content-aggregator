@@ -43,7 +43,7 @@ class SourceController extends Controller
         $userId = $request->user()->id;
 
         if ($existingSource!=null) { // If this source already exists
-            echo('exist');
+            // echo('exist');
             $userHasSource = $this->userHasSource($userId, $existingSource->id);
 
             if (!$userHasSource) { // User did not have this source yet
@@ -75,7 +75,7 @@ class SourceController extends Controller
                 }
             }
         } else {
-            echo('not exist');
+            // echo('not exist');
             $newSource = $this->createNewSource($request);
             if($newSource!=null){
                 $userSource = $this->addUserSource($userId, $newSource->id);
