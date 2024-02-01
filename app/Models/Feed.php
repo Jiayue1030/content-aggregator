@@ -11,7 +11,11 @@ class Feed extends Base
     // use HasFactory,SoftDeletes,HasApiTokens;
 
     protected $casts = ['categories'=>'array',
-                        'authors'=>'array'];
+                        'authors'=>'array',
+                        'created_at' => 'datetime:Y-m-d h:m:s',
+                        'updated_at' => 'datetime:Y-m-d h:m:s'];
+
+    // protected $dates = ['pubdate','created_at','updated_at'];
     
     protected $fillable = [
         'title',

@@ -12,7 +12,11 @@ class Source extends Model
 {
     use HasFactory,SoftDeletes,HasApiTokens;
 
-    protected $casts = ['metadata' => 'array','author' => 'array'];
+    protected $casts = ['metadata' => 'array','author' => 'array',
+                        'created_at' => 'datetime:Y-m-d h:m:s',
+                        'updated_at' => 'datetime:Y-m-d h:m:s'];
+
+    protected $dates = ['created_at','updated_at'];
 
     protected $hidden = ['created_by'];
 
