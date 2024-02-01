@@ -58,7 +58,7 @@ class FeedUpdateService
         $newLastFetch = LastFetched::updateOrCreate(
             ['source_id' => $sourceId],
             ['last_fetched_feed_id' => $newLastFetchedFeedId,
-            'last_check'=>\Carbon\Carbon::now()]
+            'last_checked'=>\Carbon\Carbon::now()]
         );
 
         return $newLastFetch; 
