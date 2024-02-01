@@ -20,10 +20,10 @@ class FeedController extends Controller
         $rssResults = $crawler->readRssItems($rssUrl);
 
         // Get the RSS results which are 100 days earlier than the request date
-        $filteredResults = $this->filterRssItemsByDate($rssResults, 100);
+        // $filteredResults = $this->filterRssItemsByDate($rssResults, 100);
 
         // Iterate through the filtered results and add them to the Feed model and user_feeds table
-        foreach ($filteredResults as $rssItem) {
+        foreach ($rssResults as $rssItem) {
             // Check if the feed already exists, and if not, add it
             $feed = Feed::updateOrCreate(
                 ['guid' => $rssItem['guid'],

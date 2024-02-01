@@ -11,6 +11,7 @@ use App\Http\Controllers\FeedController;
 use App\Http\Controllers\CrawlerController;
 use App\Models\LastFetched;
 use App\Models\Source;
+use Illuminate\Support\Carbon;
 
 class FeedUpdateService
 {
@@ -56,7 +57,8 @@ class FeedUpdateService
 
         $newLastFetch = LastFetched::updateOrCreate(
             ['source_id' => $sourceId],
-            ['last_fetched_feed_id' => $newLastFetchedFeedId]
+            ['last_fetched_feed_id' => $newLastFetchedFeedId,
+            'last_check'=>\Carbon\Carbon::now()]
         );
 
         return $newLastFetch; 
