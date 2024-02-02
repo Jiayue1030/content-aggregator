@@ -65,7 +65,7 @@ class FeedController extends Controller
                 // $userFeedsList = Feed::whereIn('id',$userFeedIds)->with('source')
                 // ->orderBy('pubdate','desc')->get();
                 
-                $userFeedsList = Feed::whereIn('source_id',$source->id)->with('source')
+                $userFeedsList = Feed::where('source_id',$source->id)->with('source')
                 ->orderBy('pubdate','desc')->get();
 
                 if($source==null){
