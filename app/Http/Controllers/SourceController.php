@@ -161,11 +161,13 @@ class SourceController extends Controller
 
     public function deleteUserSource(Request $request,$userSourceId){
         $userId = $request->user()->id;
-        $userSource = UserSource::where(['user_id'=>$userId,'id'=>$userSourceId])->find($userSourceId);
+        $sourceId = $userSourceId;
+        $userSource = UserSource::where(['user_id'=>$userId,'source_id'=>$sourceId])
+                     ->find($userSourceId);
         // $userFeedsList = UserFeed::where();
         if($userSource){
             $userSource->status = 'disabled';
-            // $userSource->save();
+            $userSource->save();
             $userSource->delete();
             return $this->success([
                 'message' => 'Unsubscibed source.'
