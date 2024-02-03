@@ -40,20 +40,28 @@ class InfoEntryController extends Controller
         return $this->addOriginToInfoType($request,'tag',$userTagId,'feed',$userFeedId);
     }
 
-    public function deleteSourceFromFolder(DeleteInfoEntryRequest $request,$infoEntryId){
-        return $this->deleteInfoEntry($request,$infoEntryId,$infoType='folder',$origin='source');
+    public function deleteSourceFromFolder(DeleteInfoEntryRequest $request){
+        $folderId = $request->folder_id;
+        $sourceId = $request->source_id;
+        return $this->deleteInfoEntry($request,$sourceId,$folderId,$infoType='folder',$origin='source');
     }
 
-    public function deleteFeedFromFolder(DeleteInfoEntryRequest $request,$infoEntryId){
-        return $this->deleteInfoEntry($request,$infoEntryId,$infoType='folder',$origin='feed');
+    public function deleteFeedFromFolder(DeleteInfoEntryRequest $request){
+        $folderId = $request->folder_id;
+        $feedId = $request->feed_id;
+        return $this->deleteInfoEntry($request,$feedId,$folderId,$infoType='folder',$origin='feed');
     }
 
-    public function deleteSourceFromTag(DeleteInfoEntryRequest $request,$infoEntryId){
-        return $this->deleteInfoEntry($request,$infoEntryId,$infoType='tag',$origin='source');
+    public function deleteSourceFromTag(DeleteInfoEntryRequest $request){
+        $tagId = $request->tag_id;
+        $sourceId = $request->source_id;
+        return $this->deleteInfoEntry($request,$sourceId,$tagId,$infoType='tag',$origin='source');
     }
 
-    public function deleteFeedFromTag(DeleteInfoEntryRequest $request,$infoEntryId){
-        return $this->deleteInfoEntry($request,$infoEntryId,$infoType='tag',$origin='feed');
+    public function deleteFeedFromTag(DeleteInfoEntryRequest $request){
+        $tagId = $request->tag_id;
+        $feedId = $request->feed_id;
+        return $this->deleteInfoEntry($request,$feedId,$tagId,$infoType='tag',$origin='feed');
     }
 
     //origin = ['source','feed]; infotype=['folder','tag']
@@ -158,17 +166,20 @@ class InfoEntryController extends Controller
     
 
     //Remove a source(origin) from folder(infoType)
-    private function deleteInfoEntry(DeleteInfoEntryRequest $request,$infoEntryId,$infoType,$origin){
+    private function deleteInfoEntry(DeleteInfoEntryRequest $request,$originId,$infoTypeId,$infoType,$origin){
         //infoEntry is the relationship record between origin(source,feed) and infoType(folder,tag)
         $userId = $request->user()->id;
-        $infoEntry = InfoEntry::where(['id'=>$infoEntryId,'user_id'=>$userId])->get()->first();
-
+        $infoEntry = InfoEntry::where([
+                        'type_id'=>$infoTypeId,
+                        'origin_id' =>$originId,
+                        'user_id'=>$userId]
+                    )->get()->first();
         if($infoEntry==null){
-            return $this->error('This user did not own this info entry');
+            return $this->error('This user did not own this info entry.');
         }else{
             $infoEntry->delete();
             return $this->success([
-                'message' => 'This '.$infoType.' is deleted from '.$origin.'.'
+                'message' => 'This '.$origin.' is deleted from '.$infoType.'.'
             ]);
         }
     }

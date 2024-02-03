@@ -23,5 +23,9 @@ class DeleteInfoEntryRequest extends FormRequest
      */
     public function rules()
     {
+        return [
+            'folder_id'=>'nullable|integer',
+            'source_id'=>'nullable|integer',
+        ];
     }
 }

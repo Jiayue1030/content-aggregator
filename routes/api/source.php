@@ -73,6 +73,9 @@ Route::middleware(['auth:user'])->group(function(){
     Route::post('info/feed/folder/{userFeedId}/{userTagId}', [InfoEntryController::class, 'addFeedToFolder']);
     Route::post('info/feed/tag/{userFeedId}/{userTagId}', [InfoEntryController::class, 'addFeedToTag']);
 
+    Route::post('info/source/folder/delete',
+                [InfoEntryController::class,'deleteSourceFromFolder']);
+
     Route::get('info/feed/folder/get/{userFolderId}',[UserFeedController::class,'getUserFeedsWithFolder']);
     
     Route::get('getOriginFromInfoType/{origin}/{infoTypeId}',[InfoEntryController::class,'getOriginFromInfoType']);
