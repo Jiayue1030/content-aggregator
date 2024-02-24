@@ -2,53 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
 use Illuminate\Http\Request;
 use Vedmant\FeedReader\Facades\FeedReader;
 use GuzzleHttp\Client as GuzzleClient;
-use Illuminate\Http\JsonResponse;
 use Symfony\Component\DomCrawler\Crawler;
-use Weidner\Goutte\GoutteFacade as Goutte;
-use Illuminate\Support\Facades\Response;
 use GuzzleHttp\Exception\ClientException;
-use SimplePie\Author;
 use \DOMDocument;
-use DOMXPath;
 use SimplePie;
+use Dompdf\Dompdf;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\App;
+use Vatttan\Apdf\Apdf;
+use Graby\Graby;
 
 class CrawlerController extends Controller
 {
-    public function getContents($url) {
+    public function getContents($url)
+    {
         // $url = $request->url;
         $response = $this->fetchWebsiteContents($url);
         $rssFeedsLinks = null;
         $is_rss = false;
 
-        if($response->getStatusCode() == 200) {
+        if ($response->getStatusCode() == 200) {
             $contentType = $response->getHeaders()['Content-Type'][0];
             // echo($contentType);
-            if(strpos($contentType,'text/xml')!==false){
+            if (strpos($contentType, 'text/xml') !== false) {
                 $is_rss = true;
                 $rssBody = $response->getBody()->getContents();
                 return $this->success([
-                    'is_rss'=> $is_rss,
+                    'is_rss' => $is_rss,
                     'url'   => $url
                 ]);
-            }else{
+            } else {
                 $is_rss = false;
-                $rssFeedsLinks = $this->getRssLinks($url,$response->getBody()->getContents());
+                $rssFeedsLinks = $this->getRssLinks($url, $response->getBody()->getContents());
                 return $this->success([
                     'rss_feeds_link' => $rssFeedsLinks
                 ]);
             }
-        }else{
+        } else {
             return $this->error('No response from the url.');
         }
     }
 
-    private function fetchWebsiteContents($url){
+    private function fetchWebsiteContents($url)
+    {
         $client = new GuzzleClient();
-        
+
         try {
             $response = $client->get($url);
             // echo('okok');
@@ -64,14 +65,15 @@ class CrawlerController extends Controller
     /**
      * View the page source to find "application/rss+xml" and extract the rss link
      */
-    private function getRssLinks($url,$response){
+    private function getRssLinks($url, $response)
+    {
         $rssFeedsLinks = [];
         $htmlContent = $response;
         $crawler = new Crawler($htmlContent);
 
         // Look for the RSS feed link in the <head> section
         $feedLinks = $crawler->filter(
-            'head link[type="application/rss+xml"]', 
+            'head link[type="application/rss+xml"]',
         );
         $feedUrls = [];
         // Iterate over the matched elements and extract href attributes
@@ -81,25 +83,26 @@ class CrawlerController extends Controller
         });
         $rssFeedsLinks = $feedUrls;
 
-        if(sizeof($rssFeedsLinks)>0){
+        if (sizeof($rssFeedsLinks) > 0) {
             return $rssFeedsLinks;
-        }else{
+        } else {
             return $this->concatUriGetRssLink($url);
         }
     }
 
-    private function concatUriGetRssLink($url){
+    private function concatUriGetRssLink($url)
+    {
         // Define the possible URI paths to try
         $uriPaths = ['/feed', '/rss', '/rss.xml'];
 
         foreach ($uriPaths as $uri) {
             // Concatenate the URI with the base URL
-            $url = rtrim($url,'/');
-            $newUrl = $url.$uri;
+            $url = rtrim($url, '/');
+            $newUrl = $url . $uri;
             $response = $this->fetchWebsiteContents($newUrl);
             $contentType = $response->getHeaders()['Content-Type'][0];
 
-            if ($response !== null && strpos($contentType,'text/xml')!==false) {
+            if ($response !== null && strpos($contentType, 'text/xml') !== false) {
                 return $newUrl;
             }
         }
@@ -108,15 +111,16 @@ class CrawlerController extends Controller
     }
 
     //Return the RSS source information
-    public function readRss($rssUrl){
-        $feed = new SimplePie\SimplePie($rssUrl,$_SERVER['DOCUMENT_ROOT'].'/cache');
+    public function readRss($rssUrl)
+    {
+        $feed = new SimplePie\SimplePie($rssUrl, $_SERVER['DOCUMENT_ROOT'] . '/cache');
         $feed->set_feed_url($rssUrl);
         $feed->enable_cache(false);
         // $feed->set_cache_location($_SERVER['DOCUMENT_ROOT'] . '\\app\\cache_files');
         $feed->init();
         $feed->handle_content_type();
-        
-        if($feed->data!=null){
+
+        if ($feed->data != null) {
             $rssSourceData = [
                 'title' => $feed->get_title(),
                 'url'   => $rssUrl, //url source from user
@@ -125,21 +129,24 @@ class CrawlerController extends Controller
                 'type'  => $feed->get_type(),
                 'is_rss' => true,
                 'language' => $feed->get_language(),
-                'metadata' => ['copyright'  => $feed->get_copyright(),
-                                'image_url' => $feed->get_image_url()],
+                'metadata' => [
+                    'copyright'  => $feed->get_copyright(),
+                    'image_url' => $feed->get_image_url()
+                ],
                 'author' => $feed->get_authors(),
                 'link'  => $feed->get_link(), //Public website from the rss source
             ];
             return response()->json($rssSourceData);
-        }else{
+        } else {
             return null; //TODO:This link not support rss (you should call above methods and get that)
         }
     }
 
-    
+
 
     //Return the RSS feeds information
-    public function readRssItems($rssUrl){
+    public function readRssItems($rssUrl)
+    {
         $feed = FeedReader::read($rssUrl);
         $feed->force_feed(true);
         // dd($f); //https://www.mdpi.com/journal/sustainability
@@ -152,29 +159,31 @@ class CrawlerController extends Controller
                 // 'content' => $rssItem->get_item_tags($rssItem->get_link(),'content')!=null?
                 //                 $rssItem->get_content():
                 //                 $this->getContentFromLink($rssItem->get_link()),
-                'content'=>$rssItem->get_content(),
+                'content' => $rssItem->get_content(),
                 'link' => $rssItem->get_link(),
                 'guid' => $rssItem->get_id(),
                 'authors' => $rssItem->get_authors(),
                 'categories' => $rssItem->get_categories(),
                 'pubdate' => $rssItem->get_date('Y-m-d H:i:s'),
             ];
-        
+
             $rssItemsData[] = $itemData;
         }
         return $rssItemsData;
         //TODO: last check point?
     }
 
-    
 
-    public function readRssItemsTest(Request $request){
+
+    public function readRssItemsTest(Request $request)
+    {
         $this->readRssItems2($request->url);
     }
 
     //Use SimplePie function to loop through feeds in the rss source
-    public function readRssItems2($rssUrl){
-        $feed = new SimplePie\SimplePie($rssUrl,$_SERVER['DOCUMENT_ROOT'].'/cache');
+    public function readRssItems2($rssUrl)
+    {
+        $feed = new SimplePie\SimplePie($rssUrl, $_SERVER['DOCUMENT_ROOT'] . '/cache');
         $feed->set_feed_url($rssUrl);
         // $feed->set_cache_location($_SERVER['DOCUMENT_ROOT'] . '\\app\\cache_files');
         $feed->init();
@@ -189,7 +198,7 @@ class CrawlerController extends Controller
                 // 'content' => $rssItem->get_item_tags($rssItem->get_link(),'content')!=null?
                 //                 $rssItem->get_content():
                 //                 $this->getContentFromLink($rssItem->get_link()),
-                'content'=>$rssItem->get_content(),
+                'content' => $rssItem->get_content(),
                 'link' => $rssItem->get_link(),
                 'guid' => $rssItem->get_id(),
                 'authors' => $rssItem->get_authors(),
@@ -201,13 +210,44 @@ class CrawlerController extends Controller
         return $rssItemsData;
     }
 
-    public function getContentFromLinkTest(Request $request){
-        return $this->getContentFromLink(urldecode($request->link));
+    public function getContentFromLinkTest(Request $request)
+    {
+        $client = new GuzzleClient();
+        $url = urldecode($request->link);
+        try {
+            $response = $client->get($url);
+        } catch (ClientException $e) {
+            $response = $e->getResponse();
+        }
+        $contents = $response->withoutHeader('Transfer-Encoding')->getBody(true)->getContents();
+
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($contents);
+        libxml_use_internal_errors(false);
+        $tags = ['head','header', 'footer',
+                'nav', 'script', 'meta','style','span','input','form'];
+        foreach ($tags as $tag) {
+            $nodes = $dom->getElementsByTagName($tag);
+            if ($nodes && $nodes->length > 0) {
+                for ($i = $nodes->length; --$i >= 0;) {
+                    $href = $nodes->item($i);
+                    $href->parentNode->removeChild($href);
+                }
+            }
+        }
+        $contents = $dom->saveHTML();
+        /**This part can work, need to figure out how to donwload pdf */
+        $pdf = App::make('dompdf.wrapper')->setOptions(['defaultFont' => 'sans-serif']);
+        $pdf->loadHTML($contents);
+        return $pdf->stream();
+        
     }
 
-    public function getContentFromLink($link){
+    public function getContentFromLink($link)
+    {
         $websiteContent = $this->fetchWebsiteContents($link)
-                            ->getBody()->getContents();
+            ->getBody()->getContents();
         $htmlContent = $websiteContent;
         $dom = new DOMDocument();
         libxml_use_internal_errors(true);
@@ -247,5 +287,17 @@ class CrawlerController extends Controller
         // }
         // $articleContents = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $articleContents);
         return $articleContents;
+    }
+
+    public function php_article_extractor(Request $request){
+        $link = $request->link;
+        $graby = new Graby();
+        $result = $graby->fetchContent($link);
+        $contents = $result;
+        $contents = $result->getTitle();
+        return $contents;
+        // $pdf = App::make('dompdf.wrapper')->setOptions(['defaultFont' => 'sans-serif']);
+        // $pdf->loadHTML($contents);
+        // return $pdf->stream();
     }
 }

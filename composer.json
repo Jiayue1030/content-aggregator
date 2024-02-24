@@ -8,19 +8,25 @@
         "php": "^8.2",
         "ext-zip": "^1.21",
         "aws/aws-sdk-php-laravel": "^3.8",
+        "barryvdh/laravel-dompdf": "^2.0",
         "carbonphp/carbon-doctrine-types": "2.1.0",
         "doctrine/dbal": "^3.7",
+        "dompdf/dompdf": "^2.0",
         "fabpot/goutte": "^4.0",
         "guzzlehttp/guzzle": "^7.8",
+        "j0k3r/graby": "dev-master",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.7",
         "league/flysystem-aws-s3-v3": "^3.22",
+        "nyholm/psr7": "^1.8",
         "phpoffice/phpword": "^1.2",
         "rap2hpoutre/laravel-log-viewer": "^2.2",
         "roach-php/laravel": "^2.0",
         "robertogallea/laravel-python": "^0.1.1",
         "symfony/dom-crawler": "^6.0",
+        "symfony/psr-http-message-bridge": "^7.0",
+        "vatttan/apdf": "dev-main",
         "vedmant/laravel-feed-reader": "^1.6",
         "weidner/goutte": "^2.3",
         "zircote/swagger-php": "^4.4"
@@ -74,7 +80,8 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
         }
     },
     "minimum-stability": "dev",

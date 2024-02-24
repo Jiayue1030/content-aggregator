@@ -10,6 +10,18 @@
       'AWS' => 'Aws\\Laravel\\AwsFacade',
     ),
   ),
+  'barryvdh/laravel-dompdf' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Barryvdh\\DomPDF\\ServiceProvider',
+    ),
+    'aliases' => 
+    array (
+      'Pdf' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
+      'PDF' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
+    ),
+  ),
   'laravel/sail' => 
   array (
     'providers' => 
@@ -86,6 +98,13 @@
     'aliases' => 
     array (
       'Flare' => 'Spatie\\LaravelIgnition\\Facades\\Flare',
+    ),
+  ),
+  'vatttan/apdf' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Vatttan\\Apdf\\ApdfServiceProvider',
     ),
   ),
   'vedmant/laravel-feed-reader' => 

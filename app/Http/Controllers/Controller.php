@@ -7,6 +7,8 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use OpenApi\Attributes as OAT;
+use \DOMDocument;
+use \DOMXPath;
 
 #[
     OAT\Info(
@@ -77,4 +79,121 @@ class Controller extends BaseController
 		$response = $response + $payload;
 		return $response;
 	}
+
+    protected function cleanHtml($html){
+        // List of tags to be replaced and their replacement
+        $replace_tags = [
+            'i' => 'em', 
+            'b' => 'strong'
+        ];
+
+        // List of tags to be stripped. Text and children tags will be preserved.
+        $remove_tags = [
+            'acronym', 
+            'applet', 
+            'b', 
+            'basefont', 
+            'big', 
+            'bgsound', 
+            'blink', 
+            'center', 
+            'del', 
+            'dir', 
+            'font', 
+            'frame', 
+            'frameset', 
+            'hgroup', 
+            'i', 
+            'ins', 
+            'kbd', 
+            'marquee', 
+            'nobr', 
+            'noframes', 
+            'plaintext', 
+            'samp', 
+            'small', 
+            'span', 
+            'strike', 
+            'tt', 
+            'u', 
+            'var','header','footer','nav','script','path','meta'
+        ];
+
+        // List of attributes to remove. Applied to all tags.
+        $remove_attribs = [
+            'class', 
+            'style', 
+            'lang', 
+            'width', 
+            'height', 
+            'align', 
+            'hspace', 
+            'vspace', 
+            'dir'
+        ];
+
+        // dd($html);
+
+        $html = $this->replaceTags($html, $replace_tags);
+        $html = $this->stripTags($html, $remove_tags);
+        $html = $this->stripAttributes($html, $remove_attribs);
+
+        return $html;
+    }
+
+    private function replaceTags($html, $tags) {
+        // Clean the HTML
+        // $html = '<div>' . $html . '</div>'; // Workaround to get the HTML back from DOMDocument without the <html><head> and <body> tags
+        $dom = new DOMDocument;
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_use_internal_errors(true);
+        $html = substr($dom->saveHTML($dom->getElementsByTagName('div')->item(0)), 5, -6);
+        // Use simple string replace to replace tags
+        foreach($tags as $search => $replace) {
+            $html = str_replace('<' . $search . '>', '<' . $replace . '>', $html);
+            $html = str_replace('<' . $search . ' ', '<' . $replace . ' ', $html);
+            $html = str_replace('</' . $search . '>', '</' . $replace . '>', $html);
+        }
+        return $html;
+    }
+
+    private function stripTags($html, $tags) {
+        // Remove all attributes from tags to be removed
+        // $html = '<div>' . $html . '</div>';
+        $dom = new DOMDocument;
+        $dom->loadHTML($html);
+        foreach($tags as $tag){
+            $nodes = $dom->getElementsByTagName($tag);
+            foreach($nodes as $node) {
+                // Remove attributes
+                while($node->attributes->length) {
+                    $node->removeAttribute($node->attributes->item(0)->name);
+                }
+            }
+        }
+        
+        $html = substr($dom->saveHTML($dom->getElementsByTagName('div')->item(0)), 5, -6);
+        // Strip tags using string replace
+        foreach($tags as $tag){
+            $html = str_replace('<' . $tag . '>', '', $html);
+            $html = str_replace('</' . $tag . '>', '', $html);
+        }
+    
+        return $html;
+    }
+
+    private function stripAttributes($html, $attribs) {
+        // Find all nodes that contain the attribute and remove it
+        // $html = '<div>' . $html . '</div>';
+        $dom = new DOMDocument;
+        $dom->loadHTML($html);
+        $xPath = new DOMXPath($dom);
+        foreach($attribs as $attrib) {
+            $nodes = $xPath->query('//*[@' . $attrib . ']');
+            foreach($nodes as $node) $node->removeAttribute($attrib);
+        }
+        return substr($dom->saveHTML($dom->getElementsByTagName('div')->item(0)), 5, -6);
+    }
+    
 }
