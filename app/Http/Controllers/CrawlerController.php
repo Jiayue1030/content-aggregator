@@ -9,14 +9,18 @@ use Symfony\Component\DomCrawler\Crawler;
 use GuzzleHttp\Exception\ClientException;
 use \DOMDocument;
 use SimplePie;
-use Dompdf\Dompdf;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\App;
-use Vatttan\Apdf\Apdf;
 use Graby\Graby;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CrawlerController extends Controller
 {
+    protected $fileController;
+
+    public function __construct() {
+        $this->fileController = new FileController();
+    }
+    
     public function getContents($url)
     {
         // $url = $request->url;
@@ -294,10 +298,9 @@ class CrawlerController extends Controller
         $graby = new Graby();
         $result = $graby->fetchContent($link);
         $contents = $result;
-        $contents = $result->getTitle();
-        return $contents;
-        // $pdf = App::make('dompdf.wrapper')->setOptions(['defaultFont' => 'sans-serif']);
-        // $pdf->loadHTML($contents);
-        // return $pdf->stream();
+        $contents = $result->getHtml();
+        $contents = '<h1>'.$result->getTitle().'</h1>'.$result->getHtml();
+        Pdf::loadHTML($contents)->save('myfile.pdf');
+        return $this->fileController->downloadFile('myfile.pdf');
     }
 }

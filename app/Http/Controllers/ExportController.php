@@ -4,15 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\PhpWord;
-use PhpOffice\PhpWord\Shared\Html;
 use PhpOffice\PhpWord\IOFactory;
 use App\Http\Controllers\FeedController;
 use App\Models\Feed;
 use App\Models\Source;
 use DOMDocument;
-use DOMXPath;
-use robertogallea\LaravelPython\Services\LaravelPython;
-use Illuminate\Support\Facades\Storage;
 
 class ExportController extends Controller
 {
@@ -204,6 +200,28 @@ class ExportController extends Controller
         $html = html_entity_decode($html, ENT_QUOTES, 'UTF-8');
         $html = str_replace('&', '&amp;', $html);
         $html = str_replace(['_lt_', '_gt_', '_amp_', '_quot_'], ['&lt;', '&gt;', '&amp;', '&quot;'], $html);
+    }
+
+    public function exportToDocx($contents){
+        $phpWord = new PhpWord();
+        $itemSection = $phpWord->addSection();
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML($contents);
+        libxml_use_internal_errors(false); 
+        mb_convert_encoding($doc->saveHTML(), 'UTF-8');
+        \PhpOffice\PhpWord\Shared\Html::addHtml($itemSection,
+                                                $doc->saveHTML(),true,false);
+        
+        $objWriter = IOFactory::createWriter($phpWord, 'Word2007', $download = true);
+        $objWriter->save('export.docx');
+        $response =  $this->fileController->downloadFile('export.docx');
+        $filePath = $response['url'];
+        return $filePath;
+    }
+
+    public function exportToPdf($contents){
+        
     }
 
     public function getFeedsFromFolder(Request $request,$folderId)
