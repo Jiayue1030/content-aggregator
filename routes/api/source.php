@@ -105,5 +105,7 @@ Route::middleware(['auth:user'])->group(function(){
      Route::post('test/getContentFromLink',[CrawlerController::class,'getContentFromLinkTest']);
      
      Route::post('test/php-article-extractor',[CrawlerController::class,'php_article_extractor']);
+     
+     Route::get('test/getPdfStream',[CrawlerController::class,'getPdfStream']);
 
     });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ExtractArticleJob;
 use Illuminate\Http\Request;
 use App\Models\Feed;
 use App\Models\Source;
@@ -41,7 +42,10 @@ class FeedController extends Controller
                     'source_id' => $sourceId, 
                 ]
             );
-            
+
+            //Dispatch the ExtractArticleJob
+            ExtractArticleJob::dispatch($feed,$rssItem['link']);
+
             UserFeed::updateOrCreate(
                 ['user_id' => $userId,'feed_id' => $feed->id,'source_id'=>$sourceId],
                 ['updated_at' => now()]

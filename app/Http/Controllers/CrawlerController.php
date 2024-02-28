@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Feed;
 use Illuminate\Http\Request;
 use Vedmant\FeedReader\Facades\FeedReader;
 use GuzzleHttp\Client as GuzzleClient;
@@ -153,16 +154,12 @@ class CrawlerController extends Controller
     {
         $feed = FeedReader::read($rssUrl);
         $feed->force_feed(true);
-        // dd($f); //https://www.mdpi.com/journal/sustainability
         $rssItems = $feed->get_items();
         $rssItemsData = [];
         foreach ($rssItems as $rssItem) {
             $itemData = [
                 'title' => $rssItem->get_title(),
                 'description' => $rssItem->get_description(),
-                // 'content' => $rssItem->get_item_tags($rssItem->get_link(),'content')!=null?
-                //                 $rssItem->get_content():
-                //                 $this->getContentFromLink($rssItem->get_link()),
                 'content' => $rssItem->get_content(),
                 'link' => $rssItem->get_link(),
                 'guid' => $rssItem->get_id(),
@@ -293,7 +290,7 @@ class CrawlerController extends Controller
         return $articleContents;
     }
 
-    public function php_article_extractor(Request $request){
+    public function php_article_extractor_notwork(Request $request){
         $link = $request->link;
         $graby = new Graby();
         $result = $graby->fetchContent($link);
@@ -302,5 +299,36 @@ class CrawlerController extends Controller
         $contents = '<h1>'.$result->getTitle().'</h1>'.$result->getHtml();
         Pdf::loadHTML($contents)->save('myfile.pdf');
         return $this->fileController->downloadFile('myfile.pdf');
+    }
+
+    public function php_article_extractor(Request $request){
+        $link = $request->link;
+        $graby = new Graby();
+        
+        $client = new GuzzleClient();
+        $url = urldecode($request->link);
+        try {
+            $response = $client->get($url);
+        } catch (ClientException $e) {
+            $response = $e->getResponse();
+        }
+        $contents = $response->withoutHeader('Transfer-Encoding')->getBody(true)->getContents();
+        $html = $contents;
+        $graby->setContentAsPrefetched($html);
+        $result = $graby->fetchContent($link);
+        // dd(serialize($result->getHtml()));
+        $contents = '<h1>'.$result->getTitle().'</h1>'.$result->getHtml();
+        // Pdf::loadHTML($contents)->stream();
+
+        Pdf::loadHTML($contents)->save('myfile.pdf');
+        return $this->fileController->downloadFile('myfile.pdf');
+    }
+
+    public function getPdfStream(){
+        $feedId = 3797;
+        $feed = Feed::where('id',$feedId)->first();
+        $feedContents = $feed->content;
+        dd($feedContents);
+        Pdf::loadHTML('<h1>'.$feed->title.'</h1>'.$feedContents)->stream();
     }
 }
