@@ -9,6 +9,7 @@ use App\Http\Controllers\FeedController;
 use App\Models\Feed;
 use App\Models\Source;
 use DOMDocument;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ExportController extends Controller
 {
@@ -77,13 +78,10 @@ class ExportController extends Controller
         $feedsContentFromSources = [];
         $feeds = Feed::whereIn('id',$userFeedIds)->get();
         if ($feeds) {
-            // dd($feeds);
-            // $this->exportToWord2($userId,$feeds);
-            $file = $this->exportToWord2($userId,$feeds);
+            $file = $this->exportToPdf($userId,$feeds);
             return $this->success(
                 $file
             );
-            // $feedsContentFromSources[] = $feedsContentFromSource;
         } else {
             return $this->error('Error encounter when exporting');
         }
@@ -168,6 +166,30 @@ class ExportController extends Controller
         return ['url'=>$filePath,'filename'=>$filename];
     }
 
+    public function exportToPdf($userId,$contents){
+
+        if($contents==null){
+            return $this->error('No feeds able to export');
+        }
+
+        $htmlContents = '';
+
+        foreach ($contents as $item) {
+            $htmlContents = $htmlContents.'<h1>'.$item['title'].'</h1>
+                            <br>
+                            <div id=\'article-content\'>'.$item['content'].'</div>'.
+                            '<br>';
+                            
+        }
+
+        $datetime = now()->format('Y-m-d_H-i-s');
+        $filename = 'exported_feeds_'.$datetime.'_user_id_'.$userId.'.pdf';
+        Pdf::loadHTML($htmlContents)->save($filename);
+        $response =  $this->fileController->downloadFile($filename);
+        $filePath = $response['url'];
+        return ['url'=>$filePath,'filename'=>$filename];
+    }
+
     public function exportToWordByPython($userId,$contents)
     {
         $datetime = now()->format('Y-m-d_H-i-s');
@@ -218,10 +240,6 @@ class ExportController extends Controller
         $response =  $this->fileController->downloadFile('export.docx');
         $filePath = $response['url'];
         return $filePath;
-    }
-
-    public function exportToPdf($contents){
-        
     }
 
     public function getFeedsFromFolder(Request $request,$folderId)

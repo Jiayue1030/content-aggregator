@@ -325,10 +325,10 @@ class CrawlerController extends Controller
     }
 
     public function getPdfStream(){
-        $feedId = 3797;
+        $feedId = 4196;
         $feed = Feed::where('id',$feedId)->first();
-        $feedContents = $feed->content;
-        dd($feedContents);
-        Pdf::loadHTML('<h1>'.$feed->title.'</h1>'.$feedContents)->stream();
+        $feedContents = unserialize($feed->content);
+        // dd($feedContents);
+        Pdf::loadHTML('<h1>'.$feed->title.'</h1>'.$feedContents)->save('getPdfStream.pdf');
     }
 }
