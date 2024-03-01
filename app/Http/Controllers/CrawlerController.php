@@ -327,7 +327,8 @@ class CrawlerController extends Controller
     public function getPdfStream(){
         $feedId = 4196;
         $feed = Feed::where('id',$feedId)->first();
-        $feedContents = unserialize($feed->content);
+        //todo: if the full content is null, call the service once first;
+        $feedContents = unserialize($feed->full_content);
         // dd($feedContents);
         Pdf::loadHTML('<h1>'.$feed->title.'</h1>'.$feedContents)->save('getPdfStream.pdf');
     }

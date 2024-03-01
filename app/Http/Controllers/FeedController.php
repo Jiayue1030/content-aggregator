@@ -223,7 +223,7 @@ class FeedController extends Controller
         $articleExtractService = new ArticleExtractService();
         $extractedContent = $articleExtractService->extractArticle($url);
         //Save the model 
-        $extractedContent = $feed->content;
+        $extractedContent = $feed->full_content;
         $feed->save();
         return $this->success([
             'content' => $extractedContent

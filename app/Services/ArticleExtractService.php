@@ -24,7 +24,7 @@ class ArticleExtractService
         $result = $graby->fetchContent($url);
         $articleContent = serialize($result->getHtml());
         // echo('Extracting:'.$url);
-        Log::info('ArticleExtractService =>url:'.$url.'=>'.$articleContent);
+        // Log::info('ArticleExtractService =>url:'.$url.'=>'.$articleContent);
         return $articleContent;
     }
 }

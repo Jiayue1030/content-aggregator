@@ -44,12 +44,12 @@ class ExtractArticleJob implements ShouldQueue
         // echo('FEEDS:'.$feedContent);
         if($feedContent!='[unable to retrieve full-text content]'){
             echo('Feed id: '.$this->feed->id.'=>success');
-            $this->feed->content = $feedContent;
+            $this->feed->full_content = $feedContent;
         }else{
             echo('Feed id: '.$this->feed->id.'=>omg sadddd!');
         }
         Log::debug("============================
-                    Now the feed's content is:".$this->feed->content.
+                    Now the feed's content is:".$this->feed->full_content.
                     '============================');
         return $this->feed->save();
     }
