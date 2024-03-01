@@ -9,6 +9,7 @@ use App\Models\Source;
 use App\Models\UserFeed;
 use App\Services\FeedService;
 use App\Models\UserSource;
+use App\Services\ArticleExtractService;
 
 class FeedController extends Controller
 {
@@ -211,6 +212,22 @@ class FeedController extends Controller
         $result = $existingFeed==null?$newFeed->id:$existingFeed->id;
         // dd($result);
         return $result;
+    }
+
+    //Fetch the full contents from particular feed
+    public function fetchFullContents($feedId){
+        //Get feed->content
+        $feed = Feed::where('id',$feedId)->first();
+        $url = $feed->link;
+        //Call service
+        $articleExtractService = new ArticleExtractService();
+        $extractedContent = $articleExtractService->extractArticle($url);
+        //Save the model 
+        $extractedContent = $feed->content;
+        $feed->save();
+        return $this->success([
+            'content' => $extractedContent
+        ]);
     }
 
     private function addFeedToSubscribedUsers($feedId,$sourceId){

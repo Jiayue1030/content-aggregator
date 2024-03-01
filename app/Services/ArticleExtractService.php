@@ -23,7 +23,7 @@ class ArticleExtractService
         $graby->setContentAsPrefetched($contents);
         $result = $graby->fetchContent($url);
         $articleContent = serialize($result->getHtml());
-        echo('Extracting:'.$url);
+        // echo('Extracting:'.$url);
         Log::info('ArticleExtractService =>url:'.$url.'=>'.$articleContent);
         return $articleContent;
     }
