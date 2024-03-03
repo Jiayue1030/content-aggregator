@@ -10,6 +10,7 @@ use App\Models\UserFeed;
 use App\Services\FeedService;
 use App\Models\UserSource;
 use App\Services\ArticleExtractService;
+use Illuminate\Support\Facades\Log;
 
 class FeedController extends Controller
 {
@@ -218,15 +219,17 @@ class FeedController extends Controller
     public function fetchFullContents($feedId){
         //Get feed->content
         $feed = Feed::where('id',$feedId)->first();
-        $url = $feed->link;
         //Call service
         $articleExtractService = new ArticleExtractService();
-        $extractedContent = $articleExtractService->extractArticle($url);
-        //Save the model 
-        $extractedContent = $feed->full_content;
-        $feed->save();
+        $fullContent = '';
+        if($feed && $feed->full_content==null){
+            $articleContent =   $articleExtractService->extractArticle($feed->link);
+            $feed->full_content = $articleContent;
+            $feed->save(); 
+        }
+        $fullContent = $feed->full_content;
         return $this->success([
-            'content' => $extractedContent
+            'full_content' => $fullContent
         ]);
     }
 

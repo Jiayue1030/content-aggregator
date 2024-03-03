@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('feeds', function (Blueprint $table) {
-            $table->longText('full_content')->nullable();
+            $table->longText('full_content')->after('content')->nullable();
         });
     }
 
@@ -25,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::table('feeds', function (Blueprint $table) {
+            $table->dropColumn('full_content');
+        });
     }
 };

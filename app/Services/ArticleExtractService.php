@@ -22,9 +22,9 @@ class ArticleExtractService
         $contents = $response->withoutHeader('Transfer-Encoding')->getBody(true)->getContents();
         $graby->setContentAsPrefetched($contents);
         $result = $graby->fetchContent($url);
-        $articleContent = serialize($result->getHtml());
-        // echo('Extracting:'.$url);
-        // Log::info('ArticleExtractService =>url:'.$url.'=>'.$articleContent);
+        $articleContent = '';
+        $serializedArticleContent = serialize($result->getHtml()); //Convert graby object to serialzied tring
+        $articleContent = unserialize($serializedArticleContent); //Convert serialized string into string
         return $articleContent;
     }
 }

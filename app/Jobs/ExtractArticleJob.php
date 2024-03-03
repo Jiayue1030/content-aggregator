@@ -42,9 +42,11 @@ class ExtractArticleJob implements ShouldQueue
         //Extract the article contents
         $feedContent = $this->articleExtractService->extractArticle($url);
         // echo('FEEDS:'.$feedContent);
-        if($feedContent!='[unable to retrieve full-text content]'){
+        if($feedContent!='[unable to retrieve full-atext content]'){
             echo('Feed id: '.$this->feed->id.'=>success');
             $this->feed->full_content = $feedContent;
+            Log::info('ExtractArticleJob=>'.$this->feed->full_content);
+            $this->feed->save();
         }else{
             echo('Feed id: '.$this->feed->id.'=>omg sadddd!');
         }
