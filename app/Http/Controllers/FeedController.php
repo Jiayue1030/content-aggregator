@@ -217,20 +217,26 @@ class FeedController extends Controller
 
     //Fetch the full contents from particular feed
     public function fetchFullContents($feedId){
-        //Get feed->content
         $feed = Feed::where('id',$feedId)->first();
-        //Call service
+        $feed = $this->fetchFeedFullContents($feed->id);
+        $fullContent = $feed->full_content;
+        return $this->success([
+            'full_content' => $fullContent
+        ]);
+    }
+
+    //Fetch the full content from a feed, return a Feed model
+    public function fetchFeedFullContents($feedId):Feed
+    {
+        $feed = Feed::where('id',$feedId)->first();
         $articleExtractService = new ArticleExtractService();
-        $fullContent = '';
         if($feed && $feed->full_content==null){
             $articleContent =   $articleExtractService->extractArticle($feed->link);
             $feed->full_content = $articleContent;
             $feed->save(); 
         }
-        $fullContent = $feed->full_content;
-        return $this->success([
-            'full_content' => $fullContent
-        ]);
+        $feed->save();
+        return $feed;
     }
 
     private function addFeedToSubscribedUsers($feedId,$sourceId){

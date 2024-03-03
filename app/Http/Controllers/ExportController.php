@@ -70,6 +70,7 @@ class ExportController extends Controller
 
     public function exportFeedsContentFromSource3(Request $request)
     {
+        $feedController = new FeedController();
         if(!isset($request->feed_ids)){
             return $this->error('Need at least one feed to export.');
         }
@@ -79,7 +80,9 @@ class ExportController extends Controller
         if ($feeds) {
             foreach($feeds as $feed){
                 if($feed->full_content==null){
-                    ExtractArticleJob::dispatch($feed,$feed->link);
+                    //There will have some problem
+                    //the content might not be so soon done fetch
+                    $feed = $feedController->fetchFeedFullContents($feed->id);
                 }
             }
             $file = $this->exportToPdf($userId,$feeds);
