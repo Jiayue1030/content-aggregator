@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
 class Feed extends Base
 {
-    // use HasFactory,SoftDeletes,HasApiTokens;
+    use HasFactory,SoftDeletes,HasApiTokens;
 
     protected $casts = ['categories'=>'array',
                         'authors'=>'array',
