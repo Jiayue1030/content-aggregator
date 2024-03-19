@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ExtractArticleJob;
 use Illuminate\Http\Request;
 use App\Models\Feed;
 use App\Models\Source;
 use App\Models\UserFeed;
 use App\Services\FeedService;
 use App\Models\UserSource;
+use App\Services\ArticleExtractService;
+use Illuminate\Support\Facades\Log;
 
 class FeedController extends Controller
 {
@@ -41,7 +44,10 @@ class FeedController extends Controller
                     'source_id' => $sourceId, 
                 ]
             );
-            
+
+            //Dispatch the ExtractArticleJob
+            ExtractArticleJob::dispatch($feed,$rssItem['link']);
+
             UserFeed::updateOrCreate(
                 ['user_id' => $userId,'feed_id' => $feed->id,'source_id'=>$sourceId],
                 ['updated_at' => now()]
@@ -207,6 +213,30 @@ class FeedController extends Controller
         $result = $existingFeed==null?$newFeed->id:$existingFeed->id;
         // dd($result);
         return $result;
+    }
+
+    //Fetch the full contents from particular feed
+    public function fetchFullContents($feedId){
+        $feed = Feed::where('id',$feedId)->first();
+        $feed = $this->fetchFeedFullContents($feed->id);
+        $fullContent = $feed->full_content;
+        return $this->success([
+            'full_content' => $fullContent
+        ]);
+    }
+
+    //Fetch the full content from a feed, return a Feed model
+    public function fetchFeedFullContents($feedId):Feed
+    {
+        $feed = Feed::where('id',$feedId)->first();
+        $articleExtractService = new ArticleExtractService();
+        if($feed && $feed->full_content==null){
+            $articleContent =   $articleExtractService->extractArticle($feed->link);
+            $feed->full_content = $articleContent;
+            $feed->save(); 
+        }
+        $feed->save();
+        return $feed;
     }
 
     private function addFeedToSubscribedUsers($feedId,$sourceId){

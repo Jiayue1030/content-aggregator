@@ -41,8 +41,11 @@ Route::middleware(['auth:user'])->group(function(){
     Route::post('/feed/add/{sourceid}',[FeedController::class,'addFeeds']);
     Route::put('/feed/update/{id}',[FeedController::class,'updateFeed']);
     Route::post('/feed/delete/{id}',[FeedController::class,'deleteFeed']);
+
+    Route::get('/feed/fetch/{id}',[FeedController::class,'fetchFullContents']);
     
     Route::post('/read/rss2',[CrawlerController::class,'readRssItemsTest']);
+
 
     /**
      * User Contents Management: Folder,Tag,Note,List,Folder
@@ -105,5 +108,7 @@ Route::middleware(['auth:user'])->group(function(){
      Route::post('test/getContentFromLink',[CrawlerController::class,'getContentFromLinkTest']);
      
      Route::post('test/php-article-extractor',[CrawlerController::class,'php_article_extractor']);
+     
+     Route::get('test/getPdfStream',[CrawlerController::class,'getPdfStream']);
 
     });

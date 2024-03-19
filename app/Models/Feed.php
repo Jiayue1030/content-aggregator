@@ -21,6 +21,7 @@ class Feed extends Base
         'title',
         'description',
         'content',
+        'full_content',
         'link',
         'guid',
         'categories',
